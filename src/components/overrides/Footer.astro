@@ -29,6 +29,7 @@ import Pagination from './Pagination.astro';
   });
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-was-value]')) {
     b.addEventListener('click', () => {
+      if (b.getAttribute('aria-disabled') === 'true') return;
       // Only the page path and the answer: nothing about the reader.
       const gtag = (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag;
       gtag?.('event', 'docs_feedback', { page: location.pathname, value: b.dataset.wasValue });
@@ -36,8 +37,9 @@ import Pagination from './Pagination.astro';
       const was = b.closest('[data-was]');
       const q = was?.querySelector('[data-was-q]');
       if (q) q.textContent = 'Thanks for telling us.';
+      // aria-disabled, not disabled: a disabled button drops focus to <body>.
       for (const x of was?.querySelectorAll<HTMLButtonElement>('button') ?? []) {
-        x.disabled = true;
+        x.setAttribute('aria-disabled', 'true');
         x.setAttribute('aria-pressed', String(x === b));
       }
     });
@@ -84,11 +86,11 @@ import Pagination from './Pagination.astro';
     background: var(--felt);
     cursor: pointer;
   }
-  .was button:hover:not(:disabled) {
+  .was button:hover:not([aria-disabled='true']) {
     color: var(--chalk);
     border-color: var(--seam-2);
   }
-  .was button:disabled {
+  .was button[aria-disabled='true'] {
     cursor: default;
     opacity: 0.6;
   }

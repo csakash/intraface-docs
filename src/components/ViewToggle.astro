@@ -104,7 +104,8 @@
     const t = e.target as HTMLElement;
     if (t.closest('[data-copy-md]')) copyMd();
     // "View as Markdown" links to the .md file (works without JS); with JS it opens the Agent view at the top.
-    if (t.closest('[data-show-md]')) {
+    // ⌘/Ctrl/Shift/middle-click still opens the .md file itself.
+    if (t.closest('[data-show-md]') && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0)) {
       e.preventDefault();
       scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
       show('agent', true);
