@@ -1,5 +1,12 @@
 ---
 // Four agents publishing to one board at once (mockup/docs.html). Runs in the reader's browser only.
+// The lanes are in the HTML so nothing shifts when the script starts.
+const PEOPLE = [
+  { who: 'Priya', c: 'var(--p-priya)', agent: 'Claude Code', files: ['index.html', 'day-3.html'] },
+  { who: 'Marco', c: 'var(--p-marco)', agent: 'Cursor', files: ['styles.css', 'index.html'] },
+  { who: 'Sam', c: 'var(--p-sam)', agent: 'Codex', files: ['data/hotels.json', 'map.js'] },
+  { who: 'Dev', c: 'var(--p-dev)', agent: 'Copilot', files: ['assets/fushimi.jpg', 'budget.html'] },
+];
 ---
 
 <div class="sim not-content" id="ifc-sim" aria-label="Simulation of four agents publishing to one board">
@@ -10,7 +17,17 @@
     <span class="mono wide" data-stat>0 merges</span>
   </div>
   <div class="sim-body">
-    <div class="lanes" data-lanes></div>
+    <div class="lanes" data-lanes>
+      {
+        PEOPLE.map((p) => (
+          <div class="lane" style={`--c:${p.c}`} data-files={p.files.join(',')}>
+            <span class="av" style={`--c:${p.c}`}>{p.who[0]}</span>
+            <span class="who"><b>{p.who}</b><span class="agent">{p.agent}</span></span>
+            <span class="act"><span class="st">idle</span><span class="track"><i></i></span></span>
+          </div>
+        ))
+      }
+    </div>
     <div class="headbox">
       <div class="head-n">
         <small>Board head</small><span class="big" data-head>v41</span>
@@ -33,21 +50,15 @@
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     const rnd = (a: number, b: number) => a + Math.random() * (b - a);
     const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)] as T;
-    const PEOPLE = [
-      { who: 'Priya', c: 'var(--p-priya)', agent: 'Claude Code', files: ['index.html', 'day-3.html'] },
-      { who: 'Marco', c: 'var(--p-marco)', agent: 'Cursor', files: ['styles.css', 'index.html'] },
-      { who: 'Sam', c: 'var(--p-sam)', agent: 'Codex', files: ['data/hotels.json', 'map.js'] },
-      { who: 'Dev', c: 'var(--p-dev)', agent: 'Copilot', files: ['assets/fushimi.jpg', 'budget.html'] },
-    ];
     const MSGS = ['add day 3', 'fix the mobile header', 'swap hotel 2', 'add the train times', 'tidy the budget table', 'add photos'];
-    const lanes = PEOPLE.map((p) => {
-      const d = document.createElement('div');
-      d.className = 'lane';
-      d.style.setProperty('--c', p.c);
-      d.innerHTML = `<span class="av" style="--c:${p.c}">${p.who[0]}</span><span class="who"><b>${p.who}</b><span class="agent">${p.agent}</span></span><span class="act"><span class="st">idle</span><span class="track"><i></i></span></span>`;
-      $('[data-lanes]').appendChild(d);
-      return { ...p, el: d, st: d.querySelector('.st') as HTMLElement, bar: d.querySelector('.track i') as HTMLElement };
-    });
+    const lanes = [...root.querySelectorAll<HTMLElement>('.lane')].map((el) => ({
+      who: el.querySelector('b')?.textContent ?? '',
+      c: el.style.getPropertyValue('--c'),
+      files: (el.dataset.files ?? '').split(','),
+      el,
+      st: el.querySelector('.st') as HTMLElement,
+      bar: el.querySelector('.track i') as HTMLElement,
+    }));
     type Lane = (typeof lanes)[number];
     let head = 41;
     let merges = 0;
@@ -369,7 +380,8 @@
     font: 400 11px/1.45 var(--f-mono);
     color: var(--dust);
     overflow: hidden;
-    max-height: 196px;
+    /* Fixed height: new publishes never push the page down. */
+    height: 196px;
   }
   .feed :global(li) {
     padding: 3px 0;
@@ -435,7 +447,7 @@
       border-right: 1px dashed var(--line);
     }
     .feed {
-      max-height: 120px;
+      height: 120px;
     }
     .sim :global(.lane) {
       grid-template-columns: 22px 92px minmax(0, 1fr);

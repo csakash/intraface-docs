@@ -4,6 +4,9 @@ import { defineConfig } from 'astro/config';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightOpenAPI, { openAPISidebarGroups } from 'starlight-openapi';
 
+const FONTS =
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap';
+
 // Served at https://intraface.cc/docs through the landing Worker. outDir nests the build under docs/ so file paths
 // equal URL paths for the assets-only Worker (dist/docs/reference/cli/index.html ↔ /docs/reference/cli/).
 export default defineConfig({
@@ -25,13 +28,17 @@ export default defineConfig({
       head: [
         { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
         { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' } },
+        // Fonts load without blocking the first paint (the system font shows until they arrive).
         {
           tag: 'link',
           attrs: {
-            rel: 'stylesheet',
-            href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap',
+            rel: 'preload',
+            as: 'style',
+            href: FONTS,
+            onload: "this.onload=null;this.rel='stylesheet'",
           },
         },
+        { tag: 'noscript', content: `<link rel="stylesheet" href="${FONTS}">` },
         { tag: 'meta', attrs: { property: 'og:image', content: 'https://intraface.cc/docs/og.png' } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },

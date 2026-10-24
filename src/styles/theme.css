@@ -14,7 +14,7 @@
   --line: rgba(244, 243, 238, 0.22);
   --chalk: #f4f3ee;
   --dust: #a3a29b;
-  --dim: #7c7b75;
+  --dim: #8e8d87; /* #7c7b75 in mockup/docs.html; lifted to pass WCAG AA for small text */
   --thread: #f4f3ee;
   --on-thread: #121211;
   --ok: #6fbf86;
@@ -78,7 +78,7 @@
   --line: rgba(18, 18, 17, 0.24);
   --chalk: #121211;
   --dust: #6c6b66;
-  --dim: #8f8e88;
+  --dim: #6e6d68; /* #8f8e88 in the app; darkened to pass WCAG AA for small text */
   --thread: #121211;
   --on-thread: #f4f3ee;
   --ok: #2f6b41;
