@@ -36,6 +36,14 @@ describe('operationMarkdown', () => {
   });
 });
 
+describe('auth line', () => {
+  it('says when an operation also works without credentials', () => {
+    const report = apiPages(doc).find((p) => p.operation.operationId === 'reports.create');
+    expect(report && operationMarkdown(report)).toContain('**Auth:** Optional: agent token');
+    expect(report && operationMarkdown(report)).toContain('or none.');
+  });
+});
+
 describe('llms-api.txt and the overview', () => {
   it('lists every operation once with its .md link', () => {
     const lines = llmsApiTxt(doc)

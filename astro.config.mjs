@@ -108,7 +108,7 @@ export default defineConfig({
             {
               label: 'HTTP API reference (one Markdown file per operation)',
               url: 'https://intraface.cc/docs/llms-api.txt',
-              description: 'All 43 HTTP API operations, generated from the route contract',
+              description: 'Every HTTP API operation, generated from the route contract',
             },
           ],
         }),

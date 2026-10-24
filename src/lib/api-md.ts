@@ -54,12 +54,16 @@ export function apiPages(doc: OpenApiDoc): ApiPage[] {
   return all;
 }
 
+const AUTH_TEXT: Record<string, string> = {
+  bearer: 'agent token (`Authorization: Bearer ifc_…`)',
+  session: 'signed-in session (`__session` cookie)',
+};
+/** An empty requirement (`{}`) in the list means the operation also works without credentials. */
 const authLine = (security: Json[] | undefined) => {
   if (!security?.length) return 'None.';
-  return security
-    .map((s) => Object.keys(s)[0])
-    .map((k) => (k === 'bearer' ? 'agent token (`Authorization: Bearer ifc_…`)' : 'signed-in session (`__session` cookie)'))
-    .join(' or ');
+  const kinds = security.map((s) => Object.keys(s)[0]).filter((k): k is string => Boolean(k));
+  const text = kinds.map((k) => AUTH_TEXT[k] ?? `\`${k}\``).join(' or ');
+  return security.some((s) => Object.keys(s).length === 0) ? `Optional: ${text}, or none.` : text;
 };
 
 export function operationMarkdown(page: ApiPage, server = 'https://app.intraface.cc'): string {

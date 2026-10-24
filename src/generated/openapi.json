@@ -4,7 +4,7 @@
   "info": {
     "title": "Intraface HTTP API",
     "version": "v1",
-    "description": "Every route the Intraface app serves. Errors share one envelope: `{ error: { code, message, hint?, details? } }`.\n\n## Error codes\n\n| Code | HTTP status |\n|---|---|\n| `bad_request` | 400 |\n| `unauthorized` | 401 |\n| `forbidden` | 403 |\n| `not_found` | 404 |\n| `conflict` | 409 |\n| `needs_rebase` | 409 |\n| `too_large` | 413 |\n| `missing_blob` | 422 |\n| `missing_asset` | 422 |\n| `external_media` | 422 |\n| `bad_manifest` | 422 |\n| `too_many_new_blobs` | 422 |\n| `bad_base` | 400 |\n| `rate_limited` | 429 |\n| `retry` | 503 |\n| `not_implemented` | 501 |\n| `upgrade_required` | 426 |\n| `unsupported_media_type` | 415 |\n| `authorization_pending` | 400 |\n| `slow_down` | 400 |\n| `expired_token` | 400 |\n| `access_denied` | 400 |\n| `internal` | 500 |"
+    "description": "Every route the Intraface app serves. Errors share one envelope: `{ error: { code, message, hint?, details? } }`.\n\n## Error codes\n\n| Code | HTTP status |\n|---|---|\n| `bad_request` | 400 |\n| `unauthorized` | 401 |\n| `forbidden` | 403 |\n| `not_found` | 404 |\n| `conflict` | 409 |\n| `needs_rebase` | 409 |\n| `too_large` | 413 |\n| `missing_blob` | 422 |\n| `missing_asset` | 422 |\n| `external_media` | 422 |\n| `bad_manifest` | 422 |\n| `too_many_new_blobs` | 422 |\n| `bad_base` | 400 |\n| `rate_limited` | 429 |\n| `retry` | 503 |\n| `not_implemented` | 501 |\n| `upgrade_required` | 426 |\n| `unsupported_media_type` | 415 |\n| `authorization_pending` | 400 |\n| `slow_down` | 400 |\n| `expired_token` | 400 |\n| `access_denied` | 400 |\n| `taken_down` | 451 |\n| `blocked_content` | 422 |\n| `internal` | 500 |"
   },
   "servers": [
     {
@@ -173,6 +173,30 @@
                             {
                               "type": "null"
                             }
+                          ]
+                        },
+                        "is_member": {
+                          "default": true,
+                          "type": "boolean"
+                        },
+                        "taken_down_at": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "takedown_reason": {
+                          "default": null,
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "created_at": {
@@ -446,6 +470,19 @@
                               }
                             ]
                           },
+                          "taken_down_at": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
                           "updated_at": {
                             "type": "string",
                             "format": "date-time",
@@ -639,6 +676,30 @@
                         {
                           "type": "null"
                         }
+                      ]
+                    },
+                    "is_member": {
+                      "default": true,
+                      "type": "boolean"
+                    },
+                    "taken_down_at": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "takedown_reason": {
+                      "default": null,
+                      "type": [
+                        "string",
+                        "null"
                       ]
                     },
                     "created_at": {
@@ -853,6 +914,30 @@
                         }
                       ]
                     },
+                    "is_member": {
+                      "default": true,
+                      "type": "boolean"
+                    },
+                    "taken_down_at": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "takedown_reason": {
+                      "default": null,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
                     "created_at": {
                       "type": "string",
                       "format": "date-time",
@@ -1027,6 +1112,30 @@
                         {
                           "type": "null"
                         }
+                      ]
+                    },
+                    "is_member": {
+                      "default": true,
+                      "type": "boolean"
+                    },
+                    "taken_down_at": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "takedown_reason": {
+                      "default": null,
+                      "type": [
+                        "string",
+                        "null"
                       ]
                     },
                     "created_at": {
@@ -1249,6 +1358,8 @@
                                 "slow_down",
                                 "expired_token",
                                 "access_denied",
+                                "taken_down",
+                                "blocked_content",
                                 "internal"
                               ]
                             },
@@ -2208,6 +2319,8 @@
                                 "slow_down",
                                 "expired_token",
                                 "access_denied",
+                                "taken_down",
+                                "blocked_content",
                                 "internal"
                               ]
                             },
@@ -2334,6 +2447,8 @@
                                 "slow_down",
                                 "expired_token",
                                 "access_denied",
+                                "taken_down",
+                                "blocked_content",
                                 "internal"
                               ]
                             },
@@ -2460,6 +2575,8 @@
                                 "slow_down",
                                 "expired_token",
                                 "access_denied",
+                                "taken_down",
+                                "blocked_content",
                                 "internal"
                               ]
                             },
@@ -2761,6 +2878,8 @@
                                 "slow_down",
                                 "expired_token",
                                 "access_denied",
+                                "taken_down",
+                                "blocked_content",
                                 "internal"
                               ]
                             },
@@ -2922,6 +3041,8 @@
                                 "slow_down",
                                 "expired_token",
                                 "access_denied",
+                                "taken_down",
+                                "blocked_content",
                                 "internal"
                               ]
                             },
@@ -3095,6 +3216,8 @@
                                 "slow_down",
                                 "expired_token",
                                 "access_denied",
+                                "taken_down",
+                                "blocked_content",
                                 "internal"
                               ]
                             },
@@ -5029,11 +5152,14 @@
       "post": {
         "operationId": "viewToken.create",
         "summary": "viewToken.create",
-        "description": "A signed-in person (Clerk session cookie). Agent tokens are refused. Needs the `board.view` permission on the board. Body limit: 256 KB.",
+        "description": "An agent token (`Authorization: Bearer ifc_…`) or a signed-in person. Needs the `board.view` permission on the board. Body limit: 256 KB.",
         "tags": [
           "boards"
         ],
         "security": [
+          {
+            "bearer": []
+          },
           {
             "session": []
           }
@@ -5088,6 +5214,91 @@
                 "type": "object",
                 "properties": {},
                 "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/boards/{id}/reports": {
+      "post": {
+        "operationId": "reports.create",
+        "summary": "reports.create",
+        "description": "Works anonymously; credentials are used when sent (an invalid token is still a 401). Needs the `board.view` permission on the board. Body limit: 256 KB.",
+        "tags": [
+          "boards"
+        ],
+        "security": [
+          {},
+          {
+            "bearer": []
+          },
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "phishing",
+                      "malware",
+                      "spam",
+                      "illegal",
+                      "other"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
               }
             }
           }
@@ -6224,6 +6435,10 @@
                               }
                             ]
                           },
+                          "expired": {
+                            "default": false,
+                            "type": "boolean"
+                          },
                           "created_at": {
                             "type": "string",
                             "format": "date-time",
@@ -6354,6 +6569,10 @@
                             }
                           ]
                         },
+                        "expired": {
+                          "default": false,
+                          "type": "boolean"
+                        },
                         "created_at": {
                           "type": "string",
                           "format": "date-time",
@@ -6467,6 +6686,45 @@
           },
           "default": {
             "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/me/token/revoke": {
+      "post": {
+        "operationId": "tokens.revokeSelf",
+        "summary": "tokens.revokeSelf",
+        "description": "An agent token (`Authorization: Bearer ifc_…`) or a signed-in person. Body limit: 256 KB.",
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Success."
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
           }
         }
       }
@@ -6734,6 +6992,10 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "expired": {
+                          "default": false,
+                          "type": "boolean"
                         },
                         "created_at": {
                           "type": "string",
@@ -7020,6 +7282,10 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "expired": {
+                          "default": false,
+                          "type": "boolean"
                         },
                         "created_at": {
                           "type": "string",

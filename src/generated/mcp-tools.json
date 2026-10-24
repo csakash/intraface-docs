@@ -61,7 +61,7 @@
     },
     {
       "name": "read_file",
-      "description": "One file of a board version: text by lines (offset, limit; returns total_lines and next_offset), or base64 for a binary file up to 192 KB.",
+      "description": "One file of a board version: text by lines (offset, limit; returns total_lines and next_offset), or base64 for a binary file up to 192 KB. A line longer than 40 K characters (minified HTML) is cut: continue it with offset=next_offset and char=next_char.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -94,6 +94,12 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 5000
+          },
+          "char": {
+            "description": "Start at this character of line `offset` (to continue a cut long line; see next_char)",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [

@@ -1,6 +1,6 @@
 {
   "$generated": "pnpm docs:refs — do not edit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "commands": [
     {
       "name": "login",
@@ -36,7 +36,7 @@
     },
     {
       "name": "logout",
-      "description": "Forget the token stored for this Intraface address",
+      "description": "Revoke and forget the token stored for this Intraface address",
       "args": [
         {
           "name": "json",
@@ -47,6 +47,11 @@
           "name": "api",
           "type": "string",
           "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "keep-token",
+          "type": "boolean",
+          "description": "Only forget it here; the token keeps working"
         }
       ],
       "subcommands": []
