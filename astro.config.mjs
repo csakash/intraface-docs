@@ -14,6 +14,8 @@ export default defineConfig({
   base: '/docs',
   trailingSlash: 'always',
   outDir: './dist/docs',
+  // CSS goes into each page: four render-blocking stylesheet requests cost ~2 s of first paint on mobile networks.
+  build: { inlineStylesheets: 'always' },
   integrations: [
     starlight({
       title: 'Intraface Docs',
@@ -47,6 +49,8 @@ export default defineConfig({
       expressiveCode: {
         themes: ['github-dark-default'],
         useStarlightUiThemeColors: false,
+        // Keep the external code-block stylesheet (cached for a year via dist/_headers): the inline mode writes the
+        // CSS into a literal set:html attribute here, so it never applies.
         styleOverrides: {
           codeBackground: '#121211',
           borderColor: '#2A2A27',

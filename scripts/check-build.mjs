@@ -24,6 +24,14 @@ const attr = (html, re) => re.exec(html)?.[1];
 // A page without a description of its own falls back to the site's: that counts as missing.
 const SITE_DESCRIPTION = /description:\s*\n?\s*'([^']+)'/.exec(readFileSync('astro.config.mjs', 'utf8'))?.[1];
 const built = new Set(pages.map((f) => `${SITE}${urlOf(f)}`));
+const LAYER_ORDER = [
+  'starlight.base',
+  'starlight.reset',
+  'starlight.core',
+  'starlight.content',
+  'starlight.components',
+  'starlight.utils',
+];
 
 const descriptions = new Map();
 for (const f of pages) {
@@ -56,6 +64,15 @@ for (const f of pages) {
   if (alt !== mdOf(url)) bad(`markdown alternate is ${alt}, want ${mdOf(url)}`);
   if (!existsSync(join('dist', mdOf(url)))) bad(`no ${mdOf(url)}`);
   if (/<select[\s>]/.test(html)) bad('has a native <select>');
+  // An Astro directive that leaked into the HTML (e.g. <style set:html="…">) means its content never rendered.
+  if (/\sset:(html|text)=/.test(html)) bad('has a leaked set:html/set:text attribute');
+  // With CSS inlined, cascade layers take the order they first appear in; it must be Starlight's (theme.css declares it).
+  const layers = [];
+  for (const m of html.matchAll(/@layer\s+([\w.-]+(?:\s*,\s*[\w.-]+)*)\s*[{;]/g)) {
+    for (const n of m[1].split(/\s*,\s*/)) if (!layers.includes(n)) layers.push(n);
+  }
+  const starlight = layers.filter((n) => n.startsWith('starlight.'));
+  if (starlight.join(' ') !== LAYER_ORDER.join(' ')) bad(`CSS layers appear as ${starlight.join(' > ')}`);
   if (/<script[^>]+src="https:\/\/www\.googletagmanager/.test(html)) bad('loads gtag.js before the page has loaded');
 }
 for (const [desc, urls] of descriptions) {

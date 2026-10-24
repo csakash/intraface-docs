@@ -1,4 +1,10 @@
 /*
+ * Starlight's cascade-layer order. CSS is inlined into each page (astro.config.mjs) and layers take the order they
+ * first appear in; this file's styles come first, so the order is pinned here. scripts/check-build.mjs checks it.
+ */
+@layer starlight.base, starlight.reset, starlight.core, starlight.content, starlight.components, starlight.utils;
+
+/*
  * Intraface design tokens (human-agent-collab mockup/index.html, dark set from mockup/docs.html) mapped onto
  * Starlight. Starlight's :root is the dark theme and [data-theme='light'] the light one; its gray scale runs from
  * --sl-color-white (strongest text) to --sl-color-black (page background).
