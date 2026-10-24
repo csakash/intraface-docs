@@ -13,15 +13,23 @@
 </button>
 
 <script>
-  for (const btn of document.querySelectorAll<HTMLButtonElement>('.ifc-theme')) {
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('.ifc-theme')];
+  // The label says what a click does, so screen readers hear the current state too.
+  const label = () => {
+    const other = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    for (const b of buttons) b.setAttribute('aria-label', `Switch to the ${other} theme`);
+  };
+  for (const btn of buttons) {
     btn.addEventListener('click', () => {
       const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
       document.documentElement.dataset.theme = next;
       try {
         localStorage.setItem('starlight-theme', next);
       } catch {}
+      label();
     });
   }
+  label();
 </script>
 
 <style>

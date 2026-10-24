@@ -1,19 +1,19 @@
 ---
+import { crumbsFor } from '../../lib/crumbs';
+import { mdUrl } from '../../lib/md';
+import { CLI } from '../../lib/refs';
+
 const route = Astro.locals.starlightRoute;
 const { title, description } = route.entry.data;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const rest = Astro.url.pathname.slice(base.length).split('/').filter(Boolean);
-const LABELS: Record<string, string> = { reference: 'Reference', api: 'HTTP API', operations: 'Operations' };
-// Breadcrumbs: Docs / <section> / … / this page (sections link only where a page exists).
-const crumbs = [{ label: 'Docs', href: `${base}/` }];
-if (rest[0] === 'reference') crumbs.push({ label: 'Reference', href: '' });
-if (rest[0] === 'reference' && rest[1] === 'api' && rest.length > 2)
-  crumbs.push({ label: LABELS.api as string, href: `${base}/reference/api/` });
+const md = mdUrl(Astro.url.pathname);
+// The last crumb is this page: shown as text, not a link.
+const trail = crumbsFor(Astro.url.pathname, title, base).slice(0, -1);
 ---
 
 <nav class="crumbs" aria-label="Breadcrumb">
   {
-    crumbs.map((c) => (
+    trail.map((c) => (
       <>
         {c.href ? <a href={c.href}>{c.label}</a> : <span>{c.label}</span>}
         <span aria-hidden="true">/</span>
@@ -25,8 +25,8 @@ if (rest[0] === 'reference' && rest[1] === 'api' && rest.length > 2)
 <h1 id="_top">{title}</h1>
 {description && <p class="lede">{description}</p>}
 <div class="meta">
-  <span class="chip"><span class="dot"></span>CLI 0.3.0 · MCP · API v1</span>
-  <a href="#" data-show-md>View as Markdown</a>
+  <span class="chip"><span class="dot"></span>CLI {CLI.version} · MCP · API v1</span>
+  <a href={md} data-show-md>View as Markdown</a>
   {
     route.editUrl && (
       <a href={route.editUrl.href} rel="noopener">
@@ -37,8 +37,11 @@ if (rest[0] === 'reference' && rest[1] === 'api' && rest.length > 2)
 </div>
 <section id="agent-view" class="agent-view" aria-label="This page as Markdown">
   <div class="av-bar">
-    <b>GET {Astro.url.pathname.replace(/\/$/, '') || '/docs'}.md</b><span data-md-meta>text/markdown</span><span class="sp"
-    ></span><button type="button" class="btn" data-copy-md>Copy Markdown</button>
+    <b>GET {md}</b><span data-md-meta>text/markdown</span><span class="sp"></span><button
+      type="button"
+      class="btn"
+      data-copy-md>Copy Markdown</button
+    >
   </div>
   <pre class="md"></pre>
 </section>

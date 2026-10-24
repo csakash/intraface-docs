@@ -1,15 +1,16 @@
 ---
+import { mdUrl } from '../../lib/md';
 import Pagination from './Pagination.astro';
 ---
 
 <footer class="ifc-footer">
   <Pagination />
   <div class="foot">
-    <a href="#" data-show-md>View as Markdown</a>
+    <a href={mdUrl(Astro.url.pathname)} data-show-md>View as Markdown</a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/csakash/intraface-docs">Source on GitHub</a>
-    <span class="was" data-was>
-      <span>Was this useful?</span>
+    <span class="was" data-was role="group" aria-label="Was this page useful?">
+      <span data-was-q role="status">Was this useful?</span>
       <button type="button" data-was-value="yes">Yes</button>
       <button type="button" data-was-value="no">No</button>
     </span>
@@ -31,8 +32,14 @@ import Pagination from './Pagination.astro';
       // Only the page path and the answer: nothing about the reader.
       const gtag = (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag;
       gtag?.('event', 'docs_feedback', { page: location.pathname, value: b.dataset.wasValue });
+      // Keep the buttons (and focus) where they are; the status line announces the thanks.
       const was = b.closest('[data-was]');
-      if (was) was.textContent = 'Thanks!';
+      const q = was?.querySelector('[data-was-q]');
+      if (q) q.textContent = 'Thanks for telling us.';
+      for (const x of was?.querySelectorAll<HTMLButtonElement>('button') ?? []) {
+        x.disabled = true;
+        x.setAttribute('aria-pressed', String(x === b));
+      }
     });
   }
 </script>
@@ -77,9 +84,18 @@ import Pagination from './Pagination.astro';
     background: var(--felt);
     cursor: pointer;
   }
-  .was button:hover {
+  .was button:hover:not(:disabled) {
     color: var(--chalk);
     border-color: var(--seam-2);
+  }
+  .was button:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+  .was button[aria-pressed='true'] {
+    opacity: 1;
+    color: var(--chalk);
+    border-color: var(--thread);
   }
   .toast {
     position: fixed;

@@ -24,7 +24,7 @@ export interface McpTool {
   annotations: Record<string, boolean>;
 }
 
-export const CLI = cli as { commands: CliCommand[]; exitCodes: Array<{ code: number; name: string; description: string }> };
+export const CLI = cli as { version: string; commands: CliCommand[]; exitCodes: Array<{ code: number; name: string; description: string }> };
 export const MCP_TOOLS = (mcp as unknown as { tools: McpTool[] }).tools;
 
 /** Flags every command takes; listed once at the top of the CLI page instead of under every command. */

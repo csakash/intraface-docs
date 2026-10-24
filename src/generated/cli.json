@@ -1,5 +1,6 @@
 {
   "$generated": "pnpm docs:refs — do not edit",
+  "version": "0.3.0",
   "commands": [
     {
       "name": "login",

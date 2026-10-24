@@ -60,7 +60,9 @@ for (const path of ['/docs/', '/docs/reference/api/operations/publishescreate/']
     await expect(page.locator('.sl-markdown-content')).toBeHidden();
     await expect.poll(() => page.locator('#agent-view pre').textContent(), { timeout: 5000 }).toBe(md);
     await page.locator('.ifc-actions [data-copy-md]:visible').first().click();
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(md);
+    // The copy finishes after the click (the text is handed to the clipboard as a promise).
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText()), { timeout: 3000 }).toBe(md);
+    await expect(page.locator('#ifc-toast')).toHaveText('Markdown copied');
     await page.locator('.seg.view button[data-mode="human"]').click();
     await expect(page.locator('.sl-markdown-content')).toBeVisible();
   });

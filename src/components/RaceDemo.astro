@@ -29,11 +29,11 @@
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, reduced ? 0 : ms));
     const out = root.querySelector('[data-out]') as HTMLElement;
-    let mode = 'apart';
+    let current = 'apart';
     let run = 0;
     for (const b of root.querySelectorAll<HTMLButtonElement>('.seg button')) {
       b.addEventListener('click', () => {
-        mode = b.dataset.mode ?? 'apart';
+        current = b.dataset.mode ?? 'apart';
         for (const x of root.querySelectorAll('.seg button')) x.setAttribute('aria-pressed', String(x === b));
       });
     }
@@ -46,6 +46,8 @@
     };
     root.querySelector('[data-go]')?.addEventListener('click', async () => {
       const id = ++run;
+      // The case is fixed for the whole run: switching it mid-run applies to the next run.
+      const mode = current;
       const step = async (ms: number) => {
         await sleep(ms);
         return id === run;

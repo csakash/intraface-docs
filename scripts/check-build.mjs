@@ -21,6 +21,10 @@ const urlOf = (f) => `/docs/${relative(OUT, f).replace(/index\.html$/, '')}`;
 const mdOf = (url) => (url === '/docs/' ? '/docs/index.md' : `${url.replace(/\/$/, '')}.md`);
 const attr = (html, re) => re.exec(html)?.[1];
 
+// A page without a description of its own falls back to the site's: that counts as missing.
+const SITE_DESCRIPTION = /description:\s*\n?\s*'([^']+)'/.exec(readFileSync('astro.config.mjs', 'utf8'))?.[1];
+const built = new Set(pages.map((f) => `${SITE}${urlOf(f)}`));
+
 const descriptions = new Map();
 for (const f of pages) {
   const html = readFileSync(f, 'utf8');
@@ -35,12 +39,16 @@ for (const f of pages) {
   }
   const desc = attr(html, /<meta name="description" content="([^"]*)"/);
   if (!desc) bad('missing meta description');
+  else if (desc === SITE_DESCRIPTION) bad('no description of its own (falls back to the site description)');
   else if (desc.length > 160) bad(`meta description is ${desc.length} characters`);
   else descriptions.set(desc, [...(descriptions.get(desc) ?? []), url]);
   const ld = attr(html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   try {
-    const types = JSON.parse(ld ?? 'null')['@graph'].map((g) => g['@type']);
+    const graph = JSON.parse(ld ?? 'null')['@graph'];
+    const types = graph.map((g) => g['@type']);
     if (!types.includes('TechArticle') || !types.includes('BreadcrumbList')) bad(`JSON-LD has ${types.join(', ')}`);
+    const items = graph.find((g) => g['@type'] === 'BreadcrumbList')?.itemListElement ?? [];
+    for (const it of items) if (!built.has(it.item)) bad(`breadcrumb points at ${it.item}, which isn't a page`);
   } catch {
     bad('missing or invalid JSON-LD');
   }

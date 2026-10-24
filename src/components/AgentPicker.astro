@@ -36,10 +36,14 @@ const AGENTS = [
       ?.click();
     mark(b.dataset.label);
   });
-  // Choosing a tab directly (or a remembered choice restored by Starlight) moves the card selection too.
-  for (const t of tabs()) t.addEventListener('click', () => mark(t.textContent?.trim() ?? ''));
-  const current = tabs().find((t) => t.getAttribute('aria-selected') === 'true');
-  if (current) mark(current.textContent?.trim() ?? '');
+  // Any change of the selected tab (a click, arrow keys, Starlight's sync or a restored choice) moves the cards too.
+  const follow = () => {
+    const current = tabs().find((t) => t.getAttribute('aria-selected') === 'true');
+    if (current) mark(current.textContent?.trim() ?? '');
+  };
+  const observer = new MutationObserver(follow);
+  for (const t of tabs()) observer.observe(t, { attributes: true, attributeFilter: ['aria-selected'] });
+  follow();
 </script>
 
 <style>

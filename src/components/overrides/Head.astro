@@ -1,5 +1,6 @@
 ---
 import Default from '@astrojs/starlight/components/Head.astro';
+import { crumbsFor } from '../../lib/crumbs';
 import { mdUrl } from '../../lib/md';
 
 const { entry } = Astro.locals.starlightRoute;
@@ -9,11 +10,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const isHome = Astro.url.pathname === `${base}/`;
 const publisher = { '@type': 'Organization', name: 'Intraface', url: 'https://intraface.cc', logo: `${site}/docs/favicon.svg` };
 
-const rest = Astro.url.pathname.slice(base.length).split('/').filter(Boolean);
-const crumbs = [{ name: 'Docs', item: `${site}${base}/` }];
-for (let i = 0; i < rest.length; i++) {
-  crumbs.push({ name: i === rest.length - 1 ? entry.data.title : (rest[i] as string), item: `${site}${base}/${rest.slice(0, i + 1).join('/')}/` });
-}
+// Only levels that are pages (a BreadcrumbList item must be a real URL).
+const crumbs = crumbsFor(Astro.url.pathname, entry.data.title, base)
+  .filter((c) => c.href)
+  .map((c) => ({ name: c.label, item: `${site}${c.href}` }));
 
 const graph: object[] = [
   {

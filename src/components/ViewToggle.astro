@@ -24,13 +24,32 @@
   let typing = 0;
   let cached: string | null = null;
 
+  // A failed fetch throws and isn't cached, so the next try fetches again.
   const md = async () => {
     if (cached === null) {
       const res = await fetch(url);
-      cached = res.ok ? await res.text() : `Could not load ${url} (${res.status}).`;
+      if (!res.ok) throw new Error(`Could not load ${url} (${res.status}).`);
+      cached = await res.text();
     }
     return cached;
   };
+  const toast = (detail: string) => document.dispatchEvent(new CustomEvent('ifc:toast', { detail }));
+  // The clipboard write starts inside the click (Safari drops the user gesture after an await): the text arrives as
+  // a promise. Browsers without ClipboardItem fall back to writeText.
+  async function copyMd() {
+    try {
+      if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'text/plain': md().then((t) => new Blob([t], { type: 'text/plain' })) }),
+        ]);
+      } else {
+        await navigator.clipboard.writeText(await md());
+      }
+      toast('Markdown copied');
+    } catch {
+      toast('Couldn’t copy: open the .md link instead');
+    }
+  }
   const human = (s: string) => (s.length < 1024 ? `${s.length} B` : `${(s.length / 1024).toFixed(1)} KB`);
 
   async function show(mode: 'human' | 'agent', animate: boolean) {
@@ -47,7 +66,13 @@
     const pre = view?.querySelector('pre');
     const meta = view?.querySelector('[data-md-meta]');
     if (!view || !pre) return;
-    const text = await md();
+    let text: string;
+    try {
+      text = await md();
+    } catch (err) {
+      pre.textContent = (err as Error).message;
+      return;
+    }
     if (meta) meta.textContent = `text/markdown · ${human(text)} · also in llms-full.txt`;
     const id = ++typing;
     if (!animate || reduced) {
@@ -75,16 +100,13 @@
       show(mode, true);
     });
   }
-  document.addEventListener('click', async (e) => {
+  document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
-    if (t.closest('[data-copy-md]')) {
-      try {
-        await navigator.clipboard.writeText(await md());
-      } catch {}
-      document.dispatchEvent(new CustomEvent('ifc:toast', { detail: 'Markdown copied' }));
-    }
+    if (t.closest('[data-copy-md]')) copyMd();
+    // "View as Markdown" links to the .md file (works without JS); with JS it opens the Agent view at the top.
     if (t.closest('[data-show-md]')) {
       e.preventDefault();
+      scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
       show('agent', true);
     }
   });

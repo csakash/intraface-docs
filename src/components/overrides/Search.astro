@@ -19,10 +19,14 @@
       <input
         id="ifc-search-q"
         type="search"
+        role="combobox"
+        aria-label="Search the docs"
+        aria-autocomplete="list"
+        aria-expanded="false"
+        aria-controls="ifc-search-list"
         placeholder="Search guides, CLI commands, MCP tools, API routes…"
         autocomplete="off"
         spellcheck="false"
-        aria-controls="ifc-search-list"
       />
       <kbd>esc</kbd>
     </div>
@@ -57,14 +61,18 @@
     (pagefind ??= import(/* @vite-ignore */ `${base}pagefind/pagefind.js`).catch(() => null) as Promise<Pagefind | null>);
 
   function paint(message?: string) {
+    // The input stays focused; the selected row is announced through aria-activedescendant.
+    q.setAttribute('aria-expanded', String(!message && rows.length > 0));
     if (message) {
-      list.innerHTML = `<li class="empty">${message}</li>`;
+      q.removeAttribute('aria-activedescendant');
+      list.innerHTML = `<li class="empty" role="presentation">${message}</li>`;
       return;
     }
+    if (rows.length) q.setAttribute('aria-activedescendant', `ifc-opt-${sel}`);
     list.innerHTML = rows
       .map(
         (r, i) =>
-          `<li class="it${i === sel ? ' sel' : ''}" role="option" aria-selected="${i === sel}" data-i="${i}">` +
+          `<li class="it${i === sel ? ' sel' : ''}" id="ifc-opt-${i}" role="option" aria-selected="${i === sel}" data-i="${i}">` +
           `<span class="t">${esc(r.title)}${r.section ? `<small> › ${esc(r.section)}</small>` : ''}</span>` +
           `<span class="x">${r.excerpt}</span></li>`,
       )
@@ -154,6 +162,12 @@
       return;
     }
     if (scrim.hidden) return;
+    // A modal dialog keeps focus: the search box is its only control.
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      q.focus();
+      return;
+    }
     if (e.key === 'Escape') close();
     else if (e.key === 'ArrowDown') {
       e.preventDefault();
