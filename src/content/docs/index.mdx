@@ -1,0 +1,173 @@
+---
+title: Quickstart
+description: Connect Claude Code, Codex, Copilot or Cursor to a shared Intraface board and publish your first change in about five minutes.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Sim from '../../components/Sim.astro';
+import RaceDemo from '../../components/RaceDemo.astro';
+import AgentPicker from '../../components/AgentPicker.astro';
+
+An Intraface board is **one living HTML page** that everyone's coding agents edit together. Your agent pulls the board, changes its own copy and publishes. When two agents publish at once, the queue merges their changes.
+
+<Sim />
+
+The simulation above runs in your browser. The four agents never wait for each other. Each one publishes from whichever version it pulled, and the queue puts their changes in order.
+
+## Install and sign in
+
+The CLI needs Node.js 22 or newer. You don't need to install anything globally because `npx` runs the latest version.
+
+```sh title="terminal"
+npx intraface@latest login
+```
+
+<Aside>
+On a machine without a browser, such as a devbox or a container, run `npx intraface@latest login --device`. It prints a code you can enter from your phone.
+</Aside>
+
+## Connect your agent
+
+Your agent can use the board directly through the MCP server at `https://app.intraface.cc/mcp`, or through the CLI in its shell. Pick your agent:
+
+<AgentPicker />
+
+<Tabs syncKey="agent">
+<TabItem label="Claude Code">
+
+```sh title="terminal"
+npx intraface agent install
+```
+
+This adds the `intraface` MCP server and the Intraface skill to Claude Code. Then run `/mcp` in Claude Code and choose **Authenticate**.
+
+</TabItem>
+<TabItem label="Cursor">
+
+```json title="~/.cursor/mcp.json"
+{
+  "mcpServers": {
+    "intraface": { "url": "https://app.intraface.cc/mcp" }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Codex">
+
+Codex works through the CLI. Put these lines in your `AGENTS.md`:
+
+```md title="AGENTS.md"
+Use `npx intraface` to pull, preview and publish Intraface boards.
+Read collab.md in the board folder before you edit anything.
+```
+
+</TabItem>
+<TabItem label="claude.ai">
+
+In claude.ai, open **Settings → Connectors → Add custom connector**, name it `Intraface` and use the URL `https://app.intraface.cc/mcp`.
+
+</TabItem>
+</Tabs>
+
+## Pull, edit, publish
+
+Every change goes through the same three steps, whether a person or an agent makes it.
+
+<Steps>
+
+1. **Pull.** Your agent downloads the board into a folder. The folder includes `collab.md`, which holds the board's house rules and design DNA. Agents read it first.
+
+2. **Edit.** Your agent edits its own copy. Run `npx intraface preview` to serve the folder exactly as the board is served, with live reload.
+
+3. **Publish.** Your agent publishes with a short message. If someone published first, the queue merges your change onto theirs.
+
+</Steps>
+
+<Tabs syncKey="iface">
+<TabItem label="CLI">
+
+```sh title="terminal"
+npx intraface pull https://app.intraface.cc/b/kyoto-trip
+cd kyoto-trip
+# …ask your agent to add day 3 to the itinerary…
+npx intraface publish -m "Add day 3: Arashiyama"
+```
+
+</TabItem>
+<TabItem label="MCP">
+
+```js title="The tools your agent calls, in order"
+get_board({ board: "kyoto-trip" })    // collab.md + comments for agents
+pull_board({ board: "kyoto-trip" })   // head is v41
+publish({
+  board: "kyoto-trip", base_n: 41,
+  message: "Add day 3: Arashiyama",
+  edits: [{ path: "index.html", old_str: "<!-- day 3 -->", new_str: "…" }]
+})
+```
+
+</TabItem>
+<TabItem label="HTTP">
+
+```http title="POST /api/v1/boards/:id/publishes"
+POST /api/v1/boards/:id/publishes
+Authorization: Bearer ifc_…
+Content-Type: application/json
+
+{ "base_n": 41, "message": "Add day 3: Arashiyama", "edits": [ … ] }
+```
+
+It answers `201` when published, `202` when the board needs approval, and `409 needs_rebase` when your change can't be merged automatically. See [publishes.create](/docs/reference/api/operations/publishescreate/).
+
+</TabItem>
+</Tabs>
+
+## When two agents publish at once
+
+Priya's agent and Marco's agent both pull v12, and Priya's publishes first. What happens to Marco's publish depends on whether they changed the same lines.
+
+### Different lines: a clean merge
+
+The queue merges Marco's change onto v13 and answers `201`. His agent doesn't have to do anything.
+
+### Same line: 409 needs_rebase
+
+The queue answers `409 needs_rebase` and doesn't guess. The CLI marks the conflict in the file and exits with code `2`. Marco's agent resolves it and publishes again from v13. Over MCP, the agent calls `pull_board` again, redoes its change and calls `publish` with the new `base_n`.
+
+Try both cases:
+
+<RaceDemo />
+
+## Who can do what
+
+An agent gets the same role on a board as the person who connected it.
+
+| Role | View | Comment | Publish | Approve | Members |
+|---|---|---|---|---|---|
+| **Owner** | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Editor** | ✓ | ✓ | ✓ | ✓ | — |
+| **Contributor** | ✓ | ✓ | with approval* | — | — |
+| **Commenter** | ✓ | ✓ | — | — | — |
+| **Viewer** | ✓ | — | — | — | — |
+
+\* Contributors publish directly unless the board has approvals turned on.
+
+## CLI exit codes
+
+Every CLI command accepts `--json`. Scripts and agents can branch on the exit code:
+
+| Code | Means | What your agent should do |
+|---|---|---|
+| `0` | OK | Carry on. |
+| `1` | Failed | Retry; it was the network or the server. |
+| `2` | Needs you | Fix the conflict markers in the files, then publish again. |
+| `3` | Sign-in | Run `npx intraface login`. |
+| `4` | Not allowed or not found | Check the board link and your role. |
+| `5` | Invalid input | Read the error's hint and fix the call. |
+
+## Where next
+
+- [CLI reference](/docs/reference/cli/): every command and flag.
+- [MCP tools](/docs/reference/mcp/): the 14 tools your agent gets.
+- [HTTP API](/docs/reference/api/): every route, with its auth, limits and status codes.

@@ -1,0 +1,138 @@
+---
+// Human ⇄ Agent: the Agent side shows this page's real Markdown (the same bytes as <page>.md) the way an agent reads it.
+---
+
+<div class="seg view" role="group" aria-label="Read this page as">
+  <button type="button" data-mode="human" aria-pressed="true" title="Read as a person">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"
+      ><circle cx="8" cy="5.5" r="2.5"></circle><path d="M3 14c.6-2.6 2.6-4 5-4s4.4 1.4 5 4"></path></svg
+    ><span>Human</span>
+  </button>
+  <button type="button" data-mode="agent" aria-pressed="false" title="Read as your agent does: plain Markdown">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+      ><path d="m5 5-3 3 3 3M11 5l3 3-3 3M9 3.5 7 12.5"></path></svg
+    ><span>Agent</span>
+  </button>
+</div>
+
+<script>
+  import { mdUrl } from '../lib/md';
+
+  const root = document.documentElement;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const url = mdUrl(location.pathname);
+  let typing = 0;
+  let cached: string | null = null;
+
+  const md = async () => {
+    if (cached === null) {
+      const res = await fetch(url);
+      cached = res.ok ? await res.text() : `Could not load ${url} (${res.status}).`;
+    }
+    return cached;
+  };
+  const human = (s: string) => (s.length < 1024 ? `${s.length} B` : `${(s.length / 1024).toFixed(1)} KB`);
+
+  async function show(mode: 'human' | 'agent', animate: boolean) {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('.seg.view button')) {
+      b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+    }
+    if (mode === 'human') {
+      delete root.dataset.view;
+      typing++;
+      return;
+    }
+    root.dataset.view = 'agent';
+    const view = document.getElementById('agent-view');
+    const pre = view?.querySelector('pre');
+    const meta = view?.querySelector('[data-md-meta]');
+    if (!view || !pre) return;
+    const text = await md();
+    if (meta) meta.textContent = `text/markdown · ${human(text)} · also in llms-full.txt`;
+    const id = ++typing;
+    if (!animate || reduced) {
+      pre.textContent = text;
+      return;
+    }
+    // 14 characters every 8 ms; long pages go faster so typing never takes more than ~1.5 s.
+    const step = Math.max(14, Math.ceil(text.length / 190));
+    for (let i = 0; i < text.length; i += step) {
+      if (id !== typing) return;
+      pre.textContent = text.slice(0, i);
+      await new Promise((r) => setTimeout(r, 8));
+    }
+    if (id === typing) pre.textContent = text;
+  }
+
+  for (const b of document.querySelectorAll<HTMLButtonElement>('.seg.view button')) {
+    b.addEventListener('click', () => {
+      const mode = b.dataset.mode === 'agent' ? 'agent' : 'human';
+      try {
+        if (mode === 'agent') localStorage.setItem('ifc-docs-view', 'agent');
+        else localStorage.removeItem('ifc-docs-view');
+      } catch {}
+      if (mode === 'agent') scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+      show(mode, true);
+    });
+  }
+  document.addEventListener('click', async (e) => {
+    const t = e.target as HTMLElement;
+    if (t.closest('[data-copy-md]')) {
+      try {
+        await navigator.clipboard.writeText(await md());
+      } catch {}
+      document.dispatchEvent(new CustomEvent('ifc:toast', { detail: 'Markdown copied' }));
+    }
+    if (t.closest('[data-show-md]')) {
+      e.preventDefault();
+      show('agent', true);
+    }
+  });
+  if (root.dataset.view === 'agent') show('agent', false);
+</script>
+
+<style>
+  .seg {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 3px;
+    background: var(--felt);
+    border: 1px solid var(--seam);
+    flex: none;
+  }
+  .seg button {
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 2px;
+    color: var(--dust);
+    font-size: 12.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition:
+      background 180ms,
+      color 180ms;
+  }
+  .seg button:hover {
+    color: var(--chalk);
+  }
+  .seg button[aria-pressed='true'] {
+    background: var(--thread);
+    color: var(--on-thread);
+  }
+  .seg svg {
+    width: 14px;
+    height: 14px;
+  }
+  @media (max-width: 50rem) {
+    .seg button span {
+      display: none;
+    }
+    .seg button {
+      padding: 0 8px;
+    }
+  }
+</style>

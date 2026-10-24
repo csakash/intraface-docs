@@ -1,0 +1,259 @@
+/*
+ * Intraface design tokens (human-agent-collab mockup/index.html, dark set from mockup/docs.html) mapped onto
+ * Starlight. Starlight's :root is the dark theme and [data-theme='light'] the light one; its gray scale runs from
+ * --sl-color-white (strongest text) to --sl-color-black (page background).
+ */
+
+:root {
+  --ink: #121211;
+  --felt: #181816;
+  --felt-2: #22221f;
+  --paper: #1c1c1a;
+  --seam: #2c2c29;
+  --seam-2: #3b3b37;
+  --line: rgba(244, 243, 238, 0.22);
+  --chalk: #f4f3ee;
+  --dust: #a3a29b;
+  --dim: #7c7b75;
+  --thread: #f4f3ee;
+  --on-thread: #121211;
+  --ok: #6fbf86;
+  --warn: #e0ae4a;
+  --bad: #ec7a64;
+  --code-bg: #0b0b0a;
+  --code-fg: #e9e8e2;
+  --code-dim: #8f8e88;
+  --code-seam: #2c2c29;
+  --p-akash: #b7791f;
+  --p-priya: #0f8f7e;
+  --p-marco: #d9532f;
+  --p-sam: #6e5bd0;
+  --p-dev: #2563c9;
+  --p-rhea: #b83e86;
+  --f-display: 'Inter Tight', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --f-ui: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-pop: 0 24px 48px -18px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+
+  --sl-color-white: var(--chalk);
+  --sl-color-gray-1: #e9e8e2;
+  --sl-color-gray-2: var(--chalk);
+  --sl-color-gray-3: var(--dust);
+  --sl-color-gray-4: var(--dim);
+  --sl-color-gray-5: var(--seam);
+  --sl-color-gray-6: var(--felt-2);
+  --sl-color-gray-7: var(--felt);
+  --sl-color-black: var(--ink);
+  --sl-color-accent-low: var(--felt-2);
+  --sl-color-accent: var(--thread);
+  --sl-color-accent-high: var(--thread);
+  --sl-color-text-invert: var(--on-thread);
+  --sl-color-bg: var(--ink);
+  --sl-color-bg-nav: color-mix(in srgb, var(--ink) 86%, transparent);
+  --sl-color-bg-sidebar: var(--ink);
+  --sl-color-bg-inline-code: var(--felt-2);
+  --sl-color-hairline-light: var(--seam);
+  --sl-color-hairline: var(--seam);
+  --sl-color-hairline-shade: var(--seam-2);
+  --sl-color-backdrop-overlay: rgba(0, 0, 0, 0.5);
+  --sl-font: var(--f-ui);
+  --sl-font-mono: var(--f-mono);
+  --sl-text-h1: clamp(2.25rem, 5.4vw, 3.5rem);
+  --sl-text-h2: 1.75rem;
+  --sl-text-h3: 1.125rem;
+  --sl-content-width: 47.5rem;
+  --sl-sidebar-width: 16.5rem;
+  --sl-nav-height: 3.5rem;
+}
+
+:root[data-theme='light'] {
+  --ink: #f4f3ee;
+  --felt: #faf9f5;
+  --felt-2: #ecebe5;
+  --paper: #fcfbf8;
+  --seam: #dddbd3;
+  --seam-2: #c8c6bd;
+  --line: rgba(18, 18, 17, 0.24);
+  --chalk: #121211;
+  --dust: #6c6b66;
+  --dim: #8f8e88;
+  --thread: #121211;
+  --on-thread: #f4f3ee;
+  --ok: #2f6b41;
+  --warn: #9a6a06;
+  --bad: #c2412f;
+  --code-bg: #121211;
+  --code-seam: #2a2a27;
+  --shadow-pop: 0 24px 48px -18px rgba(18, 18, 17, 0.22), 0 4px 12px rgba(18, 18, 17, 0.08);
+
+  --sl-color-white: var(--chalk);
+  --sl-color-gray-1: #1e1e1c;
+  --sl-color-gray-2: var(--chalk);
+  --sl-color-gray-3: var(--dust);
+  --sl-color-gray-4: var(--dim);
+  --sl-color-gray-5: var(--seam);
+  --sl-color-gray-6: var(--felt-2);
+  --sl-color-gray-7: var(--felt);
+  --sl-color-black: var(--ink);
+  --sl-color-accent-low: var(--felt-2);
+  --sl-color-accent: var(--thread);
+  --sl-color-accent-high: var(--thread);
+  --sl-color-text-invert: var(--on-thread);
+  --sl-color-bg: var(--ink);
+  --sl-color-bg-nav: color-mix(in srgb, var(--ink) 86%, transparent);
+  --sl-color-bg-sidebar: var(--ink);
+  --sl-color-bg-inline-code: var(--felt-2);
+  --sl-color-hairline-light: var(--seam);
+  --sl-color-hairline: var(--seam);
+  --sl-color-hairline-shade: var(--seam-2);
+  --sl-color-backdrop-overlay: rgba(18, 18, 17, 0.32);
+}
+
+body {
+  background: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+::selection {
+  background: var(--thread);
+  color: var(--on-thread);
+}
+:focus-visible {
+  outline: 2px solid var(--thread);
+  outline-offset: 2px;
+}
+
+header.header {
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  border-bottom: 1px solid var(--seam);
+}
+
+/* Sidebar: mono group labels, hairline divider, ink bar on the current page. */
+#starlight__sidebar {
+  border-inline-end: 1px dashed var(--line);
+}
+.sidebar-content .group-label .large {
+  font: 500 0.66rem/1 var(--f-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+.sidebar-content a {
+  border-radius: 2px;
+  font-size: 0.85rem;
+  color: var(--dust);
+}
+.sidebar-content a:hover {
+  color: var(--chalk);
+  background: var(--felt-2);
+}
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover {
+  color: var(--chalk);
+  background: var(--felt-2);
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--thread);
+}
+
+/* Content typography. */
+.sl-markdown-content {
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.sl-markdown-content :is(h2, h3, h4) {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--chalk);
+}
+.sl-markdown-content h2 {
+  letter-spacing: -0.035em;
+  margin-top: 3.5rem;
+}
+.sl-markdown-content h3 {
+  letter-spacing: -0.02em;
+}
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: inherit;
+  text-decoration-color: var(--seam-2);
+  text-underline-offset: 3px;
+}
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  text-decoration-color: var(--chalk);
+}
+.sl-markdown-content :not(pre) > code {
+  font-size: 0.86em;
+  border: 1px solid var(--seam);
+  border-radius: 2px;
+  padding: 1px 5px;
+}
+/* Starlight's tables scroll sideways on narrow screens (display: block; overflow: auto): keep that. */
+.sl-markdown-content table {
+  font-size: 0.85rem;
+}
+.sl-markdown-content th {
+  font: 500 0.66rem/1 var(--f-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  background: transparent;
+  border-bottom: 1px solid var(--seam-2);
+}
+.sl-markdown-content :is(th, td) {
+  border-inline: 0;
+}
+.sl-markdown-content tr:nth-child(2n) {
+  background: transparent;
+}
+.sl-markdown-content tbody tr:hover td {
+  background: var(--felt);
+}
+
+/* Asides as mockup callouts. */
+.starlight-aside {
+  border: 1px solid var(--seam);
+  border-inline-start: 2px solid var(--thread);
+  background: var(--felt);
+  border-radius: 3px;
+}
+.starlight-aside--caution {
+  border-inline-start-color: var(--warn);
+}
+.starlight-aside__title {
+  color: var(--chalk);
+  font-family: var(--f-display);
+}
+
+/* Tabs: the dark code-head look from the mockup. */
+starlight-tabs .tablist-wrapper {
+  border-bottom: 1px solid var(--seam);
+}
+starlight-tabs [role='tab'] {
+  font: 500 0.75rem/1 var(--f-mono);
+  color: var(--dust);
+  border-bottom-color: transparent;
+}
+starlight-tabs [role='tab'][aria-selected='true'] {
+  color: var(--chalk);
+  border-bottom-color: var(--chalk);
+  font-weight: 500;
+}
+
+/* Squared-off shapes everywhere: no pills. */
+.sl-badge,
+.pagination-links a,
+.expressive-code .frame {
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

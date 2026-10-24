@@ -1,0 +1,56 @@
+---
+// "Copy page for your agent", "Open in Claude", "llms.txt": shown in the desktop and the mobile table of contents.
+import { mdUrl } from '../lib/md';
+
+const md = new URL(mdUrl(Astro.url.pathname), Astro.site).href;
+const claude = `https://claude.ai/new?q=${encodeURIComponent(`Read ${md} and help me with Intraface.`)}`;
+const llms = `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}llms.txt`;
+---
+
+<div class="ifc-actions">
+  <button type="button" data-copy-md>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"
+      ><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path
+        d="M10.5 3.5v-1a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1"></path></svg
+    >Copy page for your agent
+  </button>
+  <a href={claude} target="_blank" rel="noopener">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+      ><path d="M9 2.5h4.5V7M13.5 2.5 7 9M11.5 9.5v3a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3"></path></svg
+    >Open in Claude
+  </a>
+  <a href={llms}>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"
+      ><path d="M3 2.5h7l3 3v8H3z"></path><path d="M5.5 8h5M5.5 10.5h5"></path></svg
+    >llms.txt
+  </a>
+</div>
+
+<style>
+  .ifc-actions {
+    display: grid;
+    gap: 2px;
+  }
+  .ifc-actions :is(button, a) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: inherit;
+    font-size: 12.5px;
+    color: var(--dust);
+    text-decoration: none;
+    padding: 5px 0;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .ifc-actions :is(button, a):hover {
+    color: var(--chalk);
+  }
+  .ifc-actions svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+  }
+</style>

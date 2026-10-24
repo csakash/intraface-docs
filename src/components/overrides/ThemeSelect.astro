@@ -1,0 +1,58 @@
+---
+// One toggle button instead of Starlight's <select> (the Intraface design system has no native selects).
+---
+
+<button class="ifc-theme ib" type="button" aria-label="Switch to the other theme" data-tip="Theme">
+  <svg class="sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"
+    ><circle cx="8" cy="8" r="3"></circle><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"
+    ></path></svg
+  >
+  <svg class="moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+    ><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7Z"></path></svg
+  >
+</button>
+
+<script>
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('.ifc-theme')) {
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem('starlight-theme', next);
+      } catch {}
+    });
+  }
+</script>
+
+<style>
+  .ib {
+    width: 34px;
+    height: 34px;
+    border-radius: 3px;
+    display: inline-grid;
+    place-items: center;
+    color: var(--dust);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition:
+      background 160ms,
+      color 160ms,
+      transform 160ms var(--ease-out);
+  }
+  .ib:hover {
+    background: var(--felt-2);
+    color: var(--chalk);
+  }
+  .ib:active {
+    transform: scale(0.94);
+  }
+  svg {
+    width: 17px;
+    height: 17px;
+  }
+  :global([data-theme='light']) .moon,
+  :global([data-theme='dark']) .sun {
+    display: none;
+  }
+</style>

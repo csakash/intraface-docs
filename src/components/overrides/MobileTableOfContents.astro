@@ -1,0 +1,21 @@
+---
+import Default from '@astrojs/starlight/components/MobileTableOfContents.astro';
+import PageActions from '../PageActions.astro';
+---
+
+<Default />
+<template id="ifc-mobile-actions"><div class="ifc-mobile-actions"><PageActions /></div></template>
+
+<script>
+  // Put the page actions at the bottom of the mobile "On this page" dropdown, so they exist below 72rem too.
+  const tpl = document.getElementById('ifc-mobile-actions') as HTMLTemplateElement | null;
+  const dropdown = document.querySelector('mobile-starlight-toc .dropdown');
+  if (tpl && dropdown && !dropdown.querySelector('.ifc-mobile-actions')) dropdown.append(tpl.content.cloneNode(true));
+</script>
+
+<style is:global>
+  .ifc-mobile-actions {
+    padding: 0.75rem var(--sl-nav-pad-x) 1rem;
+    border-top: 1px dashed var(--line);
+  }
+</style>

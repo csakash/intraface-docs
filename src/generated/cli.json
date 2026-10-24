@@ -1,0 +1,750 @@
+{
+  "$generated": "pnpm docs:refs — do not edit",
+  "commands": [
+    {
+      "name": "login",
+      "description": "Sign in from this machine (browser, or --device for headless machines)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "device",
+          "type": "boolean",
+          "description": "Use a device code instead of a browser callback"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Name for this token (default: \"intraface CLI on <hostname>\")"
+        },
+        {
+          "name": "agent",
+          "type": "string",
+          "description": "Which agent uses this token, e.g. claude-code"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "logout",
+      "description": "Forget the token stored for this Intraface address",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "whoami",
+      "description": "Who you are signed in as",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "new",
+      "description": "Turn a folder (or one HTML file) into a new board",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "path",
+          "type": "positional",
+          "description": "Folder or .html file (default: this folder)"
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Board title (default: the page’s <title>)"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Board type: travel, compliance, review, launch, dossier, blank, upload (default: upload)"
+        },
+        {
+          "name": "localize",
+          "type": "boolean",
+          "description": "Bring outside, inline and remote media into assets/ first (--no-localize skips it)",
+          "default": true
+        },
+        {
+          "name": "keep-remote",
+          "type": "boolean",
+          "description": "Leave remote images, video and audio where they are"
+        },
+        {
+          "name": "allow-outside",
+          "type": "boolean",
+          "description": "Also copy data files (json, csv, pdf, …) from outside the folder"
+        },
+        {
+          "name": "allow-private",
+          "type": "boolean",
+          "description": "Also download from private and local addresses (intranet images)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "pull",
+      "description": "Download a board into a folder you (and your agent) can edit",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "board",
+          "type": "positional",
+          "description": "Board URL (https://app.intraface.cc/b/<slug>) or slug (with --merge: default this working copy)"
+        },
+        {
+          "name": "dir",
+          "type": "positional",
+          "description": "Folder (default: the board’s slug)"
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Update a working copy even though it has local changes"
+        },
+        {
+          "name": "merge",
+          "type": "boolean",
+          "description": "Merge the board’s latest version into your local changes"
+        },
+        {
+          "name": "ours",
+          "type": "string",
+          "description": "With --merge: settle these conflicted paths with your side"
+        },
+        {
+          "name": "theirs",
+          "type": "string",
+          "description": "With --merge: settle these conflicted paths with the board’s side"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "publish",
+      "description": "Publish this folder’s changes to the board as a new version",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "What you changed (shown in the board’s history)",
+          "alias": [
+            "m"
+          ]
+        },
+        {
+          "name": "resolves",
+          "type": "string",
+          "description": "Comment ids this closes, comma-separated (ids from `intraface comments`)"
+        },
+        {
+          "name": "agent",
+          "type": "string",
+          "description": "Your agent’s name (default: INTRAFACE_AGENT, else intraface-cli)"
+        },
+        {
+          "name": "rebase",
+          "type": "boolean",
+          "description": "Merge automatically when the board moved on (--no-rebase stops with exit 2)",
+          "default": true
+        },
+        {
+          "name": "ours",
+          "type": "string",
+          "description": "Settle these conflicted paths with this folder’s side (comma-separated)"
+        },
+        {
+          "name": "theirs",
+          "type": "string",
+          "description": "Settle these conflicted paths with the board’s side (comma-separated)"
+        },
+        {
+          "name": "localize",
+          "type": "boolean",
+          "description": "Bring outside, inline and remote media into assets/ first (--no-localize skips it)",
+          "default": true
+        },
+        {
+          "name": "keep-remote",
+          "type": "boolean",
+          "description": "Leave remote images, video and audio where they are"
+        },
+        {
+          "name": "allow-outside",
+          "type": "boolean",
+          "description": "Also copy data files (json, csv, pdf, …) from outside the folder"
+        },
+        {
+          "name": "allow-private",
+          "type": "boolean",
+          "description": "Also download from private and local addresses (intranet images)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "resolved",
+      "description": "Mark conflicted files from the last merge as settled by hand",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "path",
+          "type": "positional",
+          "description": "Paths (as listed by the merge); several allowed"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "comments",
+      "description": "Comments on the board (open ones by default), with ids for --resolves",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "board",
+          "type": "positional",
+          "description": "Board URL or slug (default: this working copy)"
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "description": "Only open comments (the default)"
+        },
+        {
+          "name": "all",
+          "type": "boolean",
+          "description": "Open and resolved comments"
+        },
+        {
+          "name": "for-agent",
+          "type": "boolean",
+          "description": "Only comments asking an agent to do something"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "reply",
+      "description": "Reply to a comment thread",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "id",
+          "type": "positional",
+          "description": "Comment id (or its first 8 characters)",
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "The reply",
+          "alias": [
+            "m"
+          ],
+          "required": true
+        },
+        {
+          "name": "board",
+          "type": "string",
+          "description": "Board URL or slug (default: this working copy)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "resolve",
+      "description": "Mark a comment thread resolved (your own, or any as an editor)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "id",
+          "type": "positional",
+          "description": "Comment id (or its first 8 characters)",
+          "required": true
+        },
+        {
+          "name": "board",
+          "type": "string",
+          "description": "Board URL or slug (default: this working copy)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "assets",
+      "description": "Show what publish would bring into assets/ (outside, inline and remote media); --fix does it now",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "fix",
+          "type": "boolean",
+          "description": "Copy, extract and download now, and rewrite the references"
+        },
+        {
+          "name": "keep-remote",
+          "type": "boolean",
+          "description": "Leave remote images, video and audio where they are"
+        },
+        {
+          "name": "allow-outside",
+          "type": "boolean",
+          "description": "Also copy data files (json, csv, pdf, …) from outside the folder"
+        },
+        {
+          "name": "allow-private",
+          "type": "boolean",
+          "description": "Also download from private and local addresses (intranet images)"
+        }
+      ],
+      "subcommands": [
+        {
+          "name": "add",
+          "description": "Add images, video, audio or data files to assets/ and print the path to use",
+          "args": [
+            {
+              "name": "json",
+              "type": "boolean",
+              "description": "Print one machine-readable JSON document on stdout"
+            },
+            {
+              "name": "api",
+              "type": "string",
+              "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+            },
+            {
+              "name": "source",
+              "type": "positional",
+              "description": "Files or http(s) URLs",
+              "required": true
+            },
+            {
+              "name": "via-server",
+              "type": "boolean",
+              "description": "Have Intraface fetch URLs (what agents without a disk use)"
+            },
+            {
+              "name": "allow-outside",
+              "type": "boolean",
+              "description": "Also copy data files (json, csv, pdf, …) from outside the folder"
+            },
+            {
+              "name": "allow-private",
+              "type": "boolean",
+              "description": "Also download from private and local addresses (intranet images)"
+            }
+          ],
+          "subcommands": []
+        }
+      ]
+    },
+    {
+      "name": "agent",
+      "description": "Connect a coding agent to Intraface (`intraface agent install`)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        }
+      ],
+      "subcommands": [
+        {
+          "name": "install",
+          "description": "Set up Claude Code: the Intraface MCP server and an Intraface skill",
+          "args": [
+            {
+              "name": "json",
+              "type": "boolean",
+              "description": "Print one machine-readable JSON document on stdout"
+            },
+            {
+              "name": "api",
+              "type": "string",
+              "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+            },
+            {
+              "name": "client",
+              "type": "string",
+              "description": "Which agent to set up (claude)",
+              "default": "claude"
+            },
+            {
+              "name": "print",
+              "type": "boolean",
+              "description": "Only print what to run; change nothing"
+            }
+          ],
+          "subcommands": []
+        }
+      ]
+    },
+    {
+      "name": "revert",
+      "description": "Publish an earlier version again as the newest one (editors)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "n",
+          "type": "positional",
+          "description": "The version to go back to",
+          "required": true
+        },
+        {
+          "name": "board",
+          "type": "string",
+          "description": "Board URL or slug (default: this working copy)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "approve",
+      "description": "Approve a publish waiting on an approval-mode board (editors)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "id",
+          "type": "positional",
+          "description": "Publish id",
+          "required": true
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "reject",
+      "description": "Reject a publish waiting on an approval-mode board (editors)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "id",
+          "type": "positional",
+          "description": "Publish id",
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Why (shown to the author)",
+          "alias": [
+            "m"
+          ]
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "status",
+      "description": "What changed in this working copy since it was pulled",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "remote",
+          "type": "boolean",
+          "description": "Also check whether the board has moved on since your base version"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "diff",
+      "description": "Line-by-line changes since the base version",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "paths",
+          "type": "positional",
+          "description": "Only these files"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "dna",
+      "description": "Design DNA of a page: colours, type, anchors, blocks, runtime",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "file",
+          "type": "positional",
+          "description": "HTML file (default: the board’s entry, or index.html)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "preview",
+      "description": "Serve this folder locally, exactly as Intraface will (Ctrl-C to stop)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "dir",
+          "type": "positional",
+          "description": "Folder (default: this working copy)"
+        },
+        {
+          "name": "port",
+          "type": "string",
+          "description": "Port (default 4321, or a free one)"
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "description": "Open it in the browser"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "log",
+      "description": "Versions of the board, newest first",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "board",
+          "type": "positional",
+          "description": "Board URL or slug (default: this working copy)"
+        },
+        {
+          "name": "limit",
+          "type": "string",
+          "description": "How many (default 20, max 100)"
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "open",
+      "description": "Open the board in your browser",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "board",
+          "type": "positional",
+          "description": "Board URL or slug (default: this working copy)"
+        }
+      ],
+      "subcommands": []
+    }
+  ],
+  "exitCodes": [
+    {
+      "code": 0,
+      "name": "ok",
+      "description": "Done."
+    },
+    {
+      "code": 1,
+      "name": "failed",
+      "description": "Something went wrong that retrying may fix (network, server)."
+    },
+    {
+      "code": 2,
+      "name": "needsHuman",
+      "description": "A person or agent has to sort something out first: merge conflicts marked in the files, local changes in the way, a folder that isn’t a board."
+    },
+    {
+      "code": 3,
+      "name": "auth",
+      "description": "Not signed in, or the token expired: run `intraface login`."
+    },
+    {
+      "code": 4,
+      "name": "forbidden",
+      "description": "Not allowed, or the board doesn’t exist or isn’t shared with you."
+    },
+    {
+      "code": 5,
+      "name": "validation",
+      "description": "Invalid input: read the error’s hint."
+    }
+  ]
+}

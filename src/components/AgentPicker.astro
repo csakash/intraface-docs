@@ -1,0 +1,105 @@
+---
+// Agent cards that switch the "Connect your agent" tabs below them (Starlight <Tabs syncKey="agent">).
+const AGENTS = [
+  { label: 'Claude Code', mark: 'C', c: '#C96442', note: 'MCP + skill, one command' },
+  { label: 'Cursor', mark: 'Cu', c: '#3B3B37', note: 'MCP over HTTP' },
+  { label: 'Codex', mark: 'Cx', c: '#2F6B41', note: 'Uses the CLI in its shell' },
+  { label: 'claude.ai', mark: 'AI', c: '#6E5BD0', note: 'Custom connector' },
+];
+---
+
+<div class="pick not-content" role="group" aria-label="Pick your agent" id="ifc-pick">
+  {
+    AGENTS.map((a, i) => (
+      <button type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-label={a.label}>
+        <span class="gl" style={`--c:${a.c}`}>
+          {a.mark}
+        </span>
+        <b>{a.label}</b>
+        <small>{a.note}</small>
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  const pick = document.getElementById('ifc-pick');
+  const tabs = () => [...document.querySelectorAll<HTMLElement>('starlight-tabs[data-sync-key="agent"] [role="tab"]')];
+  const mark = (label: string) => {
+    for (const b of pick?.querySelectorAll('button') ?? []) b.setAttribute('aria-pressed', String(b.dataset.label === label));
+  };
+  pick?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
+    if (!b?.dataset.label) return;
+    tabs()
+      .find((t) => t.textContent?.trim() === b.dataset.label)
+      ?.click();
+    mark(b.dataset.label);
+  });
+  // Choosing a tab directly (or a remembered choice restored by Starlight) moves the card selection too.
+  for (const t of tabs()) t.addEventListener('click', () => mark(t.textContent?.trim() ?? ''));
+  const current = tabs().find((t) => t.getAttribute('aria-selected') === 'true');
+  if (current) mark(current.textContent?.trim() ?? '');
+</script>
+
+<style>
+  .pick {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 18px 0 0;
+    font-family: var(--f-ui);
+  }
+  button {
+    display: grid;
+    gap: 8px;
+    justify-items: start;
+    padding: 12px;
+    border: 1px solid var(--seam);
+    background: var(--felt);
+    border-radius: 3px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--chalk);
+    transition:
+      border-color 160ms,
+      background 160ms,
+      transform 160ms var(--ease-out);
+  }
+  button:hover {
+    border-color: var(--seam-2);
+    background: var(--paper);
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  button[aria-pressed='true'] {
+    border-color: var(--thread);
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--thread);
+  }
+  .gl {
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    display: grid;
+    place-items: center;
+    font: 600 13px/1 var(--f-display);
+    color: #fff;
+    background: var(--c);
+  }
+  b {
+    font-weight: 500;
+    font-size: 13.5px;
+  }
+  small {
+    font-size: 11.5px;
+    color: var(--dust);
+    line-height: 1.35;
+  }
+  @media (max-width: 50rem) {
+    .pick {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

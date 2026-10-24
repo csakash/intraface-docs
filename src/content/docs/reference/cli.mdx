@@ -1,0 +1,12 @@
+---
+title: CLI reference
+description: Every intraface command, subcommand and flag, plus the exit codes your scripts and agents can branch on. Generated from the CLI itself.
+---
+
+import CliRef from '../../../components/CliRef.astro';
+
+The `intraface` CLI pulls a board into a folder, previews it and publishes your changes. It needs Node.js 22 or newer; `npx intraface@latest <command>` runs the latest version without installing anything.
+
+Every command prints one JSON document on stdout with `--json`: `{ "ok": true, … }` or `{ "ok": false, "error": { "code", "message", "hint" } }`.
+
+<CliRef />

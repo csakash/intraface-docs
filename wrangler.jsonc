@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Static docs, reached only through the landing Worker's DOCS service binding at https://intraface.cc/docs.
+  "name": "intraface-docs",
+  "account_id": "30f32e276133216ae8ff40e13d55bb48",
+  "compatibility_date": "2026-10-01",
+  // dist/docs/... is served at /docs/... (astro.config.mjs outDir).
+  "assets": { "directory": "./dist", "not_found_handling": "404-page" },
+  "workers_dev": false,
+  "preview_urls": false
+}

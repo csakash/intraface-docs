@@ -1,0 +1,249 @@
+---
+// Two agents publish from the same base version: a clean merge, or a real conflict (mockup/docs.html).
+---
+
+<div class="race not-content" id="ifc-race">
+  <div class="race-top">
+    <div class="seg" role="group" aria-label="What they edit">
+      <button type="button" aria-pressed="true" data-mode="apart">Different lines</button>
+      <button type="button" aria-pressed="false" data-mode="same">Same line</button>
+    </div>
+    <span class="sp"></span>
+    <button class="btn primary" type="button" data-go>▶ Run it</button>
+  </div>
+  <div class="cols">
+    <div class="rc" data-a>
+      <div class="rc-h"><span class="av" style="--c:var(--p-priya)">P</span>Priya <span class="agent">Claude Code</span></div>
+    </div>
+    <div class="pole" aria-hidden="true"><span>queue</span></div>
+    <div class="rc" data-b>
+      <div class="rc-h"><span class="av" style="--c:var(--p-marco)">M</span>Marco <span class="agent">Cursor</span></div>
+    </div>
+  </div>
+  <div class="out" data-out aria-live="polite">Choose a case and select <b>Run it</b>.</div>
+</div>
+
+<script>
+  const root = document.getElementById('ifc-race');
+  if (root) {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, reduced ? 0 : ms));
+    const out = root.querySelector('[data-out]') as HTMLElement;
+    let mode = 'apart';
+    let run = 0;
+    for (const b of root.querySelectorAll<HTMLButtonElement>('.seg button')) {
+      b.addEventListener('click', () => {
+        mode = b.dataset.mode ?? 'apart';
+        for (const x of root.querySelectorAll('.seg button')) x.setAttribute('aria-pressed', String(x === b));
+      });
+    }
+    const ev = (col: string, html: string) => {
+      const d = document.createElement('div');
+      d.className = 'ev';
+      d.innerHTML = html;
+      root.querySelector(col)?.appendChild(d);
+      requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('on')));
+    };
+    root.querySelector('[data-go]')?.addEventListener('click', async () => {
+      const id = ++run;
+      const step = async (ms: number) => {
+        await sleep(ms);
+        return id === run;
+      };
+      for (const e of root.querySelectorAll('.ev')) e.remove();
+      out.innerHTML = 'Both agents pull…';
+      ev('[data-a]', 'pull → <b>v12</b>');
+      ev('[data-b]', 'pull → <b>v12</b>');
+      if (!(await step(700))) return;
+      ev('[data-a]', mode === 'same' ? 'edit <b>h1</b>: "Kyoto, 5 days"' : 'edit <b>day-3.html</b>');
+      ev('[data-b]', mode === 'same' ? 'edit <b>h1</b>: "Kyoto in spring"' : 'edit <b>styles.css</b>');
+      if (!(await step(900))) return;
+      ev('[data-a]', 'publish base v12 → <span class="ok">201 · v13</span>');
+      out.innerHTML = '<b>Priya</b> published first. Marco is now one version behind.';
+      if (!(await step(1000))) return;
+      if (mode === 'apart') {
+        ev('[data-b]', 'publish base v12 → <span class="ok">201 · v14</span><br>merged onto v13');
+        out.innerHTML = "<b>Clean merge.</b> The queue merged Marco's change onto v13. His agent didn't have to do anything.";
+        return;
+      }
+      ev('[data-b]', 'publish base v12 → <span class="bad">409 needs_rebase</span>');
+      if (!(await step(900))) return;
+      ev(
+        '[data-b]',
+        'CLI exit <b>2</b>: conflict marked<pre>&lt;&lt;&lt;&lt;&lt;&lt;&lt; v13 (Priya)\nKyoto, 5 days\n=======\nKyoto in spring\n&gt;&gt;&gt;&gt;&gt;&gt;&gt; yours</pre>',
+      );
+      out.innerHTML = "Both agents changed the same line, so the queue <b>doesn't guess</b>. Marco's agent gets a conflict to resolve…";
+      if (!(await step(1300))) return;
+      ev('[data-b]', 'resolve → publish base v13 → <span class="ok">201 · v14</span>');
+      out.innerHTML = '<b>Resolved.</b> Marco\'s agent kept "Kyoto in spring, 5 days" and published v14. Neither change was lost.';
+    });
+  }
+</script>
+
+<style>
+  .race {
+    border: 1px solid var(--seam);
+    border-radius: 4px;
+    background: var(--felt);
+    margin: 18px 0 8px;
+    font-family: var(--f-ui);
+  }
+  .race-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .sp {
+    flex: 1;
+  }
+  .seg {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 3px;
+    background: var(--felt);
+    border: 1px solid var(--seam);
+  }
+  .seg button {
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 2px;
+    color: var(--dust);
+    font: 400 12.5px/1 var(--f-ui);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .seg button[aria-pressed='true'] {
+    background: var(--thread);
+    color: var(--on-thread);
+  }
+  .btn {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 2px;
+    border: 1px solid var(--thread);
+    background: var(--thread);
+    color: var(--on-thread);
+    font: 500 12.5px/1 var(--f-ui);
+    cursor: pointer;
+  }
+  .btn:hover {
+    opacity: 0.88;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 64px 1fr;
+    padding: 16px 14px 6px;
+  }
+  .rc {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    min-width: 0;
+  }
+  .rc-h {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--chalk);
+  }
+  .av {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--c);
+  }
+  .agent {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    font-weight: 400;
+    color: var(--dust);
+    border: 1px dashed var(--seam-2);
+    border-radius: 2px;
+    padding: 1px 5px;
+  }
+  .pole {
+    position: relative;
+    justify-self: center;
+    border-left: 1px dashed var(--line);
+    min-height: 160px;
+  }
+  .pole span {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font: 500 10px/1 var(--f-mono);
+    color: var(--dim);
+    background: var(--felt);
+    padding: 3px 4px;
+  }
+  .race :global(.ev) {
+    font: 400 12px/1.45 var(--f-mono);
+    padding: 8px 10px;
+    border: 1px solid var(--seam);
+    background: var(--paper);
+    border-radius: 3px;
+    color: var(--dust);
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 360ms var(--ease-expo),
+      transform 360ms var(--ease-expo);
+    min-width: 0;
+  }
+  .race :global(.ev.on) {
+    opacity: 1;
+    transform: none;
+  }
+  .race :global(.ev b) {
+    color: var(--chalk);
+    font-weight: 500;
+  }
+  .race :global(.ok) {
+    color: var(--ok);
+  }
+  .race :global(.bad) {
+    color: var(--bad);
+  }
+  .race :global(.ev pre) {
+    margin: 6px 0 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: 11px;
+    color: var(--chalk);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .out {
+    padding: 12px 14px 14px;
+    font-size: 13.5px;
+    color: var(--dust);
+    min-height: 46px;
+  }
+  .out :global(b) {
+    color: var(--chalk);
+    font-weight: 500;
+  }
+  @media (max-width: 50rem) {
+    .cols {
+      grid-template-columns: 1fr 24px 1fr;
+      padding: 14px 10px 6px;
+    }
+    .pole span {
+      display: none;
+    }
+  }
+</style>

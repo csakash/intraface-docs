@@ -1,0 +1,448 @@
+---
+// Four agents publishing to one board at once (mockup/docs.html). Runs in the reader's browser only.
+---
+
+<div class="sim not-content" id="ifc-sim" aria-label="Simulation of four agents publishing to one board">
+  <div class="sim-head">
+    <span class="live"><i></i><span data-live>LIVE</span></span>
+    <span><b>kyoto-trip</b> · 4 agents, one board</span>
+    <span class="sp"></span>
+    <span class="mono wide" data-stat>0 merges</span>
+  </div>
+  <div class="sim-body">
+    <div class="lanes" data-lanes></div>
+    <div class="headbox">
+      <div class="head-n">
+        <small>Board head</small><span class="big" data-head>v41</span>
+        <div class="sub" data-sub>waiting for a publish</div>
+      </div>
+      <ul class="feed" data-feed aria-live="off"></ul>
+    </div>
+  </div>
+  <div class="sim-foot">
+    <button class="btn" type="button" data-toggle>Pause</button>
+    <button class="btn" type="button" data-rush>Rush: everyone publishes at once</button>
+  </div>
+</div>
+
+<script>
+  const root = document.getElementById('ifc-sim');
+  if (root) {
+    const $ = <T extends HTMLElement>(s: string) => root.querySelector(s) as T;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+    const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)] as T;
+    const PEOPLE = [
+      { who: 'Priya', c: 'var(--p-priya)', agent: 'Claude Code', files: ['index.html', 'day-3.html'] },
+      { who: 'Marco', c: 'var(--p-marco)', agent: 'Cursor', files: ['styles.css', 'index.html'] },
+      { who: 'Sam', c: 'var(--p-sam)', agent: 'Codex', files: ['data/hotels.json', 'map.js'] },
+      { who: 'Dev', c: 'var(--p-dev)', agent: 'Copilot', files: ['assets/fushimi.jpg', 'budget.html'] },
+    ];
+    const MSGS = ['add day 3', 'fix the mobile header', 'swap hotel 2', 'add the train times', 'tidy the budget table', 'add photos'];
+    const lanes = PEOPLE.map((p) => {
+      const d = document.createElement('div');
+      d.className = 'lane';
+      d.style.setProperty('--c', p.c);
+      d.innerHTML = `<span class="av" style="--c:${p.c}">${p.who[0]}</span><span class="who"><b>${p.who}</b><span class="agent">${p.agent}</span></span><span class="act"><span class="st">idle</span><span class="track"><i></i></span></span>`;
+      $('[data-lanes]').appendChild(d);
+      return { ...p, el: d, st: d.querySelector('.st') as HTMLElement, bar: d.querySelector('.track i') as HTMLElement };
+    });
+    type Lane = (typeof lanes)[number];
+    let head = 41;
+    let merges = 0;
+    let running = !reduced;
+    let visible = true;
+    let rush = false;
+    let wake: Array<() => void> = [];
+    const gate = () => (running && visible ? Promise.resolve() : new Promise<void>((r) => wake.push(r)));
+    const release = () => {
+      const w = wake;
+      wake = [];
+      for (const f of w) f();
+    };
+    const log = (p: Lane, html: string) => {
+      const li = document.createElement('li');
+      li.style.setProperty('--c', p.c);
+      li.innerHTML = `<span class="d"></span><span>${html}</span>`;
+      $('[data-feed]').prepend(li);
+      while ($('[data-feed]').children.length > 9) $('[data-feed]').lastChild?.remove();
+    };
+    const setBar = (p: Lane, w: number, ms: number) => {
+      p.bar.style.transition = ms ? `width ${ms}ms linear` : 'none';
+      p.bar.style.width = `${w}%`;
+    };
+    const bump = (el: HTMLElement, cls: string) => {
+      el.classList.remove(cls);
+      void el.offsetWidth;
+      el.classList.add(cls);
+    };
+    async function loop(p: Lane) {
+      await sleep(rnd(200, 2400));
+      for (;;) {
+        await gate();
+        const base = head;
+        p.st.innerHTML = `pull <em>v${base}</em>`;
+        setBar(p, 0, 0);
+        await sleep(rush ? 300 : rnd(600, 1000));
+        await gate();
+        const add = Math.ceil(rnd(2, 40));
+        const del = Math.floor(rnd(0, 12));
+        const t = rush ? 900 : rnd(2200, 4200);
+        p.st.innerHTML = `edit <em>${pick(p.files)}</em> <span class="add">+${add}</span> <span class="del">−${del}</span>`;
+        requestAnimationFrame(() => setBar(p, 100, t));
+        await sleep(t);
+        await gate();
+        p.st.innerHTML = `publish base <em>v${base}</em>…`;
+        await sleep(rnd(250, 600));
+        await gate();
+        head++;
+        const behind = head - 1 - base;
+        const msg = pick(MSGS);
+        bump(p.el, 'flash');
+        $('[data-head]').textContent = `v${head}`;
+        bump($('[data-head]'), 'bump');
+        if (behind > 0) {
+          merges++;
+          $('[data-stat]').textContent = `${merges} ${merges === 1 ? 'merge' : 'merges'}`;
+          p.st.innerHTML = `<span class="add">✓</span> <em>v${head}</em> merged over ${behind} newer`;
+          $('[data-sub]').textContent = `${p.who}'s publish merged onto v${head - 1}`;
+          log(p, `v${head} ${p.who.toLowerCase()} · ${msg} <span class="ok">(merged)</span>`);
+        } else {
+          p.st.innerHTML = `<span class="add">✓</span> published <em>v${head}</em>`;
+          $('[data-sub]').textContent = `${p.who}'s publish went straight on`;
+          log(p, `v${head} ${p.who.toLowerCase()} · ${msg}`);
+        }
+        await sleep(rush ? 500 : rnd(1400, 3200));
+        p.st.textContent = 'idle';
+        setBar(p, 0, 0);
+        await sleep(rush ? 100 : rnd(400, 2600));
+      }
+    }
+    const toggle = $('[data-toggle]');
+    const paint = () => {
+      root.classList.toggle('paused', !running);
+      $('[data-live]').textContent = running ? 'LIVE' : 'PAUSED';
+      toggle.textContent = running ? 'Pause' : 'Play';
+    };
+    toggle.addEventListener('click', () => {
+      running = !running;
+      paint();
+      if (running) release();
+    });
+    $('[data-rush]').addEventListener('click', () => {
+      rush = true;
+      running = true;
+      paint();
+      release();
+      document.dispatchEvent(new CustomEvent('ifc:toast', { detail: 'Every agent is publishing. The queue merges them.' }));
+      setTimeout(() => {
+        rush = false;
+      }, 7000);
+    });
+    new IntersectionObserver(([e]) => {
+      visible = Boolean(e?.isIntersecting);
+      if (visible) release();
+    }).observe(root);
+    paint();
+    for (const l of lanes) loop(l);
+    if (reduced) {
+      const still = [
+        '<span class="add">✓</span> published <em>v41</em>',
+        'edit <em>styles.css</em> <span class="add">+12</span> <span class="del">−3</span>',
+        'pull <em>v41</em>',
+        'idle',
+      ];
+      lanes.forEach((l, i) => {
+        l.st.innerHTML = still[i] as string;
+      });
+    }
+  }
+</script>
+
+<style>
+  .sim {
+    position: relative;
+    margin: 0 0 12px;
+    border: 1px solid var(--seam);
+    background: var(--felt);
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: var(--f-ui);
+  }
+  .sim-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px dashed var(--line);
+    font-size: 12.5px;
+    color: var(--dust);
+  }
+  .sim-head b {
+    color: var(--chalk);
+    font-weight: 500;
+  }
+  .sp {
+    flex: 1;
+  }
+  .mono {
+    font: 500 11.5px/1 var(--f-mono);
+  }
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 11px/1 var(--f-mono);
+    color: var(--ok);
+  }
+  .live i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 55%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 7px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  .sim.paused .live {
+    color: var(--dim);
+  }
+  .sim.paused .live i {
+    animation: none;
+  }
+  .sim-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 210px;
+  }
+  .lanes {
+    padding: 8px 0;
+  }
+  .sim :global(.lane) {
+    display: grid;
+    grid-template-columns: 22px 120px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+  }
+  .sim :global(.lane + .lane) {
+    border-top: 1px solid var(--seam);
+  }
+  .sim :global(.av) {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--c);
+  }
+  .sim :global(.who) {
+    display: grid;
+    line-height: 1.25;
+    min-width: 0;
+  }
+  .sim :global(.who b) {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--chalk);
+  }
+  .sim :global(.agent) {
+    justify-self: start;
+    margin-top: 2px;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    color: var(--dust);
+    border: 1px dashed var(--seam-2);
+    border-radius: 2px;
+    padding: 1px 5px;
+    white-space: nowrap;
+  }
+  .sim :global(.act) {
+    display: block;
+    min-width: 0;
+  }
+  .sim :global(.st) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 400 12px/1.3 var(--f-mono);
+    color: var(--dust);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sim :global(.st em) {
+    font-style: normal;
+    color: var(--chalk);
+  }
+  .sim :global(.add),
+  .sim :global(.ok) {
+    color: var(--ok);
+  }
+  .sim :global(.del) {
+    color: var(--bad);
+  }
+  .sim :global(.track) {
+    display: block;
+    height: 3px;
+    margin-top: 7px;
+    background: var(--seam);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .sim :global(.track i) {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--c);
+    border-radius: 2px;
+  }
+  .sim :global(.lane.flash) {
+    animation: flash 900ms var(--ease-out);
+  }
+  @keyframes flash {
+    0% {
+      background: color-mix(in srgb, var(--c) 18%, transparent);
+    }
+    100% {
+      background: transparent;
+    }
+  }
+  .headbox {
+    border-left: 1px dashed var(--line);
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+  .head-n {
+    padding: 16px 16px 12px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .head-n small {
+    display: block;
+    font: 500 10.5px/1 var(--f-mono);
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .big {
+    font: 600 44px/1 var(--f-display);
+    letter-spacing: -0.05em;
+    display: inline-block;
+    color: var(--chalk);
+    font-variant-numeric: tabular-nums;
+  }
+  .big:global(.bump) {
+    animation: bump 520ms var(--ease-expo);
+  }
+  @keyframes bump {
+    0% {
+      transform: translateY(10px);
+      opacity: 0.2;
+    }
+    100% {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  .sub {
+    font-size: 11.5px;
+    color: var(--dust);
+    margin-top: 6px;
+  }
+  .feed {
+    list-style: none;
+    margin: 0;
+    padding: 10px 14px;
+    font: 400 11px/1.45 var(--f-mono);
+    color: var(--dust);
+    overflow: hidden;
+    max-height: 196px;
+  }
+  .feed :global(li) {
+    padding: 3px 0;
+    margin: 0;
+    display: flex;
+    gap: 6px;
+    animation: in 380ms var(--ease-expo);
+  }
+  .feed :global(.d) {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--c);
+    margin-top: 5px;
+    flex: none;
+  }
+  @keyframes in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+  .sim-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-top: 1px solid var(--seam);
+    background: var(--paper);
+  }
+  .btn {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 2px;
+    border: 1px solid var(--seam-2);
+    background: var(--paper);
+    color: var(--chalk);
+    font: 500 12.5px/1 var(--f-ui);
+    cursor: pointer;
+    transition:
+      transform 160ms var(--ease-out),
+      background 160ms;
+  }
+  .btn:hover {
+    background: var(--felt-2);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  @media (max-width: 50rem) {
+    .sim-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .headbox {
+      border-left: 0;
+      border-top: 1px dashed var(--line);
+      grid-template-columns: 120px minmax(0, 1fr);
+      grid-template-rows: none;
+    }
+    .head-n {
+      border-bottom: 0;
+      border-right: 1px dashed var(--line);
+    }
+    .feed {
+      max-height: 120px;
+    }
+    .sim :global(.lane) {
+      grid-template-columns: 22px 92px minmax(0, 1fr);
+      padding: 9px 12px;
+    }
+    .wide {
+      display: none;
+    }
+  }
+</style>

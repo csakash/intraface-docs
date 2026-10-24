@@ -1,0 +1,355 @@
+---
+// The mockup's command palette (⌘K, /), backed by the Pagefind index Starlight builds.
+---
+
+<button class="ifc-search" type="button" aria-label="Search docs" data-open-search>
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"
+    ><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3.5 3.5"></path></svg
+  >
+  <span class="label">Search docs</span>
+  <kbd>⌘K</kbd>
+</button>
+
+<div class="scrim" id="ifc-search" hidden>
+  <div class="pal" role="dialog" aria-modal="true" aria-label="Search docs">
+    <div class="pal-in">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"
+        ><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3.5 3.5"></path></svg
+      >
+      <input
+        id="ifc-search-q"
+        type="search"
+        placeholder="Search guides, CLI commands, MCP tools, API routes…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-controls="ifc-search-list"
+      />
+      <kbd>esc</kbd>
+    </div>
+    <ul class="pal-list" id="ifc-search-list" role="listbox"></ul>
+    <div class="pal-foot">
+      <span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span class="sp"></span><span
+        >Every result is also a .md page</span
+      >
+    </div>
+  </div>
+</div>
+
+<script>
+  type Sub = { title: string; url: string; excerpt: string; locations?: number[] };
+  type Data = { url: string; meta: { title?: string }; excerpt: string; sub_results?: Sub[] };
+  type Pagefind = {
+    search: (q: string) => Promise<{ results: Array<{ data: () => Promise<Data> }> } | null>;
+    debouncedSearch?: unknown;
+  };
+
+  const scrim = document.getElementById('ifc-search') as HTMLElement;
+  const q = document.getElementById('ifc-search-q') as HTMLInputElement;
+  const list = document.getElementById('ifc-search-list') as HTMLUListElement;
+  const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+  let pagefind: Promise<Pagefind | null> | null = null;
+  let rows: Array<{ title: string; section?: string; url: string; excerpt: string }> = [];
+  let sel = 0;
+  let run = 0;
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
+  const load = () =>
+    (pagefind ??= import(/* @vite-ignore */ `${base}pagefind/pagefind.js`).catch(() => null) as Promise<Pagefind | null>);
+
+  function paint(message?: string) {
+    if (message) {
+      list.innerHTML = `<li class="empty">${message}</li>`;
+      return;
+    }
+    list.innerHTML = rows
+      .map(
+        (r, i) =>
+          `<li class="it${i === sel ? ' sel' : ''}" role="option" aria-selected="${i === sel}" data-i="${i}">` +
+          `<span class="t">${esc(r.title)}${r.section ? `<small> › ${esc(r.section)}</small>` : ''}</span>` +
+          `<span class="x">${r.excerpt}</span></li>`,
+      )
+      .join('');
+    list.querySelector('.sel')?.scrollIntoView({ block: 'nearest' });
+  }
+
+  async function search() {
+    const id = ++run;
+    const term = q.value.trim();
+    if (!term) {
+      rows = [];
+      paint('Try “publish”, “needs_rebase”, “presign_upload” or “exit code”.');
+      return;
+    }
+    const pf = await load();
+    if (id !== run) return;
+    if (!pf) {
+      paint('Search runs on the built site (pnpm build && pnpm preview).');
+      return;
+    }
+    const res = await pf.search(term);
+    if (id !== run || !res) return;
+    const data = await Promise.all(res.results.slice(0, 8).map((r) => r.data()));
+    if (id !== run) return;
+    // One row per page, linking to its best section: one whose title has a search word, else the most matches.
+    const words = term.toLowerCase().split(/\s+/).filter(Boolean);
+    const score = (s: Sub) =>
+      (words.some((w) => s.title.toLowerCase().includes(w)) ? 1000 : 0) + (s.locations?.length ?? 0);
+    rows = data.map((d) => {
+      const best = (d.sub_results ?? [])
+        .filter((s) => s.url !== d.url && s.title !== d.meta.title)
+        .sort((a, b) => score(b) - score(a))[0];
+      return {
+        title: d.meta.title ?? d.url,
+        section: best?.title,
+        url: best?.url ?? d.url,
+        excerpt: best?.excerpt ?? d.excerpt,
+      };
+    });
+    sel = 0;
+    paint(rows.length ? undefined : `Nothing matches “${esc(term)}”.`);
+  }
+
+  let opener: HTMLElement | null = null;
+  function open(term = '') {
+    opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    scrim.hidden = false;
+    q.value = term;
+    sel = 0;
+    search();
+    requestAnimationFrame(() => q.focus());
+    load();
+  }
+  // Focus goes back to whatever opened the palette (never left in the hidden input, where `/` would stop working).
+  const close = () => {
+    scrim.hidden = true;
+    q.blur();
+    if (opener && opener !== q && document.contains(opener)) opener.focus();
+  };
+  const go = (i: number) => {
+    const r = rows[i];
+    if (!r) return;
+    close();
+    location.href = r.url;
+  };
+
+  for (const b of document.querySelectorAll('[data-open-search]')) b.addEventListener('click', () => open());
+  scrim.addEventListener('click', (e) => {
+    if (e.target === scrim) close();
+  });
+  q.addEventListener('input', search);
+  list.addEventListener('click', (e) => {
+    const it = (e.target as HTMLElement).closest<HTMLElement>('.it');
+    if (it) go(Number(it.dataset.i));
+  });
+  addEventListener('keydown', (e) => {
+    const typing = (e.target as HTMLElement).closest('input, textarea, [contenteditable]');
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      scrim.hidden ? open() : close();
+      return;
+    }
+    if (e.key === '/' && scrim.hidden && !typing) {
+      e.preventDefault();
+      open();
+      return;
+    }
+    if (scrim.hidden) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      sel = Math.min(rows.length - 1, sel + 1);
+      paint();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      sel = Math.max(0, sel - 1);
+      paint();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      go(sel);
+    }
+  });
+  // /docs/?q=… (the WebSite SearchAction in the JSON-LD) opens the palette with the query.
+  const initial = new URLSearchParams(location.search).get('q');
+  if (initial) open(initial);
+</script>
+
+<style>
+  .ifc-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    height: 34px;
+    width: 240px;
+    padding: 0 8px 0 11px;
+    border-radius: 2px;
+    border: 1px solid var(--seam-2);
+    background: var(--paper);
+    color: var(--dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 160ms;
+  }
+  .ifc-search:hover {
+    border-color: var(--dust);
+  }
+  .ifc-search svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+  }
+  .ifc-search .label {
+    flex: 1;
+    text-align: left;
+  }
+  kbd {
+    font: 500 10.5px/1 var(--f-mono);
+    padding: 3px 5px;
+    border-radius: 2px;
+    border: 1px solid var(--seam-2);
+    background: var(--felt);
+    color: var(--dust);
+  }
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(18, 18, 17, 0.32);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12vh 16px 16px;
+    animation: fade 160ms ease;
+  }
+  .scrim[hidden] {
+    display: none;
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+  .pal {
+    width: min(640px, 100%);
+    background: var(--paper);
+    border: 1px solid var(--seam-2);
+    border-radius: 4px;
+    box-shadow: var(--shadow-pop);
+    overflow: hidden;
+    animation: pop 260ms var(--ease-expo);
+  }
+  @keyframes pop {
+    from {
+      transform: translateY(-8px) scale(0.98);
+      opacity: 0;
+    }
+  }
+  .pal-in {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    height: 52px;
+    border-bottom: 1px solid var(--seam);
+  }
+  .pal-in svg {
+    width: 17px;
+    height: 17px;
+    color: var(--dim);
+    flex: none;
+  }
+  .pal-in input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: inherit;
+    font-size: 15px;
+    color: var(--chalk);
+  }
+  .pal-in input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .pal-list {
+    max-height: 52vh;
+    overflow-y: auto;
+    padding: 6px;
+    margin: 0;
+    list-style: none;
+  }
+  .pal-list :global(.it) {
+    display: grid;
+    gap: 2px;
+    padding: 9px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin: 0;
+  }
+  .pal-list :global(.t) {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--chalk);
+  }
+  .pal-list :global(.t small) {
+    font-weight: 400;
+    color: var(--dust);
+  }
+  .pal-list :global(.x) {
+    font-size: 12.5px;
+    color: var(--dust);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pal-list :global(.x mark) {
+    background: none;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .pal-list :global(.it.sel) {
+    background: var(--thread);
+  }
+  .pal-list :global(.it.sel .t),
+  .pal-list :global(.it.sel .t small),
+  .pal-list :global(.it.sel .x) {
+    color: var(--on-thread);
+  }
+  .pal-list :global(.empty) {
+    padding: 22px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 13px;
+  }
+  .pal-foot {
+    display: flex;
+    gap: 14px;
+    padding: 9px 14px;
+    border-top: 1px solid var(--seam);
+    font-size: 11.5px;
+    color: var(--dim);
+    background: var(--felt);
+  }
+  .pal-foot .sp {
+    flex: 1;
+  }
+  @media (max-width: 50rem) {
+    .ifc-search {
+      width: 34px;
+      padding: 0;
+      justify-content: center;
+      border-color: transparent;
+      background: none;
+    }
+    .ifc-search .label,
+    .ifc-search kbd,
+    .pal-foot span:last-child {
+      display: none;
+    }
+  }
+  @media (max-width: 72rem) and (min-width: 50rem) {
+    .ifc-search {
+      width: 180px;
+    }
+  }
+</style>

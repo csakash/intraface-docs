@@ -1,0 +1,26 @@
+---
+import Default from '@astrojs/starlight/components/TableOfContents.astro';
+import PageActions from '../PageActions.astro';
+---
+
+<Default />
+<div class="after"><PageActions /></div>
+
+<style>
+  .after {
+    margin-top: 26px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+  :global(starlight-toc nav h2) {
+    font: 500 10.5px/1 var(--f-mono) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--dim) !important;
+  }
+  :global(starlight-toc a[aria-current='true']) {
+    color: var(--chalk) !important;
+    font-weight: 500;
+    box-shadow: inset 2px 0 0 var(--thread);
+  }
+</style>

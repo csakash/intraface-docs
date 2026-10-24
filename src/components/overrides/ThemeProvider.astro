@@ -1,0 +1,19 @@
+---
+// Starlight's ThemeProvider, with storage access guarded: blocked storage (private modes, strict cookie settings)
+// throws on read, and the page must still pick the system theme instead of failing before first paint.
+---
+
+<script is:inline>
+  window.StarlightThemeProvider = (() => {
+    let stored = null;
+    try {
+      stored = localStorage.getItem('starlight-theme');
+    } catch (e) {}
+    const theme = stored || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+    try {
+      if (localStorage.getItem('ifc-docs-view') === 'agent') document.documentElement.dataset.view = 'agent';
+    } catch (e) {}
+    return { updatePickers() {} };
+  })();
+</script>

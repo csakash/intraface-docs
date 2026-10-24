@@ -1,0 +1,101 @@
+---
+import { CLI, type CliArg, type CliCommand, COMMON_FLAGS } from '../lib/refs';
+
+const all: Array<{ cmd: CliCommand; full: string }> = [];
+const walk = (c: CliCommand, prefix: string) => {
+  all.push({ cmd: c, full: `${prefix}${c.name}` });
+  for (const s of c.subcommands) walk(s, `${prefix}${c.name} `);
+};
+for (const c of CLI.commands) walk(c, '');
+const common = CLI.commands[0]?.args.filter((a) => COMMON_FLAGS.includes(a.name)) ?? [];
+const name = (a: CliArg) => (a.type === 'positional' ? `<${a.name}>` : `--${a.name}${a.type === 'string' ? ' <value>' : ''}`);
+const id = (s: string) => `cmd-${s.replace(/\s+/g, '-')}`;
+---
+
+<h2 id="flags">Flags every command takes</h2>
+<ul>
+  {common.map((a) => (<li><code>{name(a)}</code>: {a.description}</li>))}
+</ul>
+
+<h2 id="commands">Commands</h2>
+<div class="not-content index">
+  {all.map(({ full }) => <a href={`#${id(full)}`}>{full}</a>)}
+</div>
+{
+  all.map(({ cmd, full }) => {
+    const own = cmd.args.filter((a) => !COMMON_FLAGS.includes(a.name));
+    return (
+      <>
+        <h3 id={id(full)}>intraface {full}</h3>
+        {cmd.description && <p>{cmd.description}</p>}
+        {own.length > 0 && (
+          <table>
+            <thead>
+              <tr>
+                <th>Flag</th>
+                <th>Does</th>
+              </tr>
+            </thead>
+            <tbody>
+              {own.map((a) => (
+                <tr>
+                  <td>
+                    <code>{name(a)}</code>
+                    {a.alias?.length ? <span class="alias"> {a.alias.map((x) => `-${x}`).join(', ')}</span> : null}
+                  </td>
+                  <td>
+                    {a.description}
+                    {a.required ? ' Required.' : ''}
+                    {a.default !== undefined && a.default !== false ? (
+                      <>
+                        {' '}
+                        Default: <code>{String(a.default)}</code>.
+                      </>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </>
+    );
+  })
+}
+
+<h2 id="exit-codes">Exit codes</h2>
+<table>
+  <thead><tr><th>Code</th><th>Name</th><th>Means</th></tr></thead>
+  <tbody>
+    {CLI.exitCodes.map((e) => (<tr><td><code>{e.code}</code></td><td>{e.name}</td><td>{e.description}</td></tr>))}
+  </tbody>
+</table>
+
+<style>
+  .index {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 8px;
+  }
+  .index a {
+    font: 500 12px/1 var(--f-mono);
+    padding: 6px 8px;
+    border: 1px solid var(--seam);
+    border-radius: 2px;
+    background: var(--felt);
+    color: var(--dust);
+    text-decoration: none;
+  }
+  .index a:hover {
+    color: var(--chalk);
+    border-color: var(--seam-2);
+  }
+  .alias {
+    font: 400 11px var(--f-mono);
+    color: var(--dim);
+  }
+  td:first-child {
+    white-space: nowrap;
+  }
+</style>

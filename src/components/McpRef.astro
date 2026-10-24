@@ -1,0 +1,66 @@
+---
+import { mcpGroups } from '../lib/refs';
+
+const HINT: Record<string, string> = { readOnlyHint: 'read-only', destructiveHint: 'changes the board', openWorldHint: 'fetches the web' };
+---
+
+{
+  mcpGroups().map(([group, tools]) => (
+    <>
+      <h2 id={group.toLowerCase()}>{group}</h2>
+      {tools.map((t) => {
+        const req = new Set(t.inputSchema.required ?? []);
+        const props = Object.entries(t.inputSchema.properties ?? {});
+        const hints = Object.entries(t.annotations)
+          .filter(([k, v]) => v && HINT[k])
+          .map(([k]) => HINT[k]);
+        return (
+          <>
+            <h3 id={t.name}>
+              <code>{t.name}</code>
+            </h3>
+            {hints.length > 0 && <p class="hints">{hints.join(' · ')}</p>}
+            <p>{t.description}</p>
+            {props.length > 0 && (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Input</th>
+                    <th>Type</th>
+                    <th>About</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {props.map(([name, p]) => (
+                    <tr>
+                      <td>
+                        <code>{name}</code>
+                        {req.has(name) ? ' *' : ''}
+                      </td>
+                      <td>{p.type ?? '—'}</td>
+                      <td>{p.description ?? ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        );
+      })}
+    </>
+  ))
+}
+<p class="note">* required</p>
+
+<style>
+  .hints,
+  .note {
+    font: 500 11px/1 var(--f-mono);
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  td:first-child {
+    white-space: nowrap;
+  }
+</style>
