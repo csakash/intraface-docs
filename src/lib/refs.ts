@@ -31,8 +31,8 @@ export const MCP_TOOLS = (mcp as unknown as { tools: McpTool[] }).tools;
 export const COMMON_FLAGS = ['json', 'api'];
 
 const MCP_GROUPS: Array<[string, string[]]> = [
-  ['Read', ['list_boards', 'get_board', 'pull_board', 'read_file', 'list_versions', 'get_diff']],
-  ['Write', ['create_board', 'publish']],
+  ['Read', ['list_boards', 'get_board', 'pull_board', 'read_file', 'list_versions', 'get_diff', 'export_version']],
+  ['Write', ['create_board', 'publish', 'set_status']],
   ['Assets', ['presign_upload', 'upload_asset', 'import_assets']],
   ['Comments', ['list_comments', 'reply_comment', 'resolve_comment']],
 ];

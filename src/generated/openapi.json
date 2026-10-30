@@ -4700,6 +4700,25 @@
                         }
                       ]
                     },
+                    "clerk": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "sent",
+                            "existing_user",
+                            "pending",
+                            "capped",
+                            "failed",
+                            "skipped"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "accept_url": {
                       "type": "string",
                       "format": "uri"
@@ -4852,6 +4871,25 @@
                                 "required": [
                                   "id",
                                   "name"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "clerk": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "sent",
+                                  "existing_user",
+                                  "pending",
+                                  "capped",
+                                  "failed",
+                                  "skipped"
                                 ]
                               },
                               {
@@ -5040,6 +5078,25 @@
                         }
                       ]
                     },
+                    "clerk": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "sent",
+                            "existing_user",
+                            "pending",
+                            "capped",
+                            "failed",
+                            "skipped"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "accept_url": {
                       "type": "string",
                       "format": "uri"
@@ -5112,11 +5169,339 @@
                         "commenter",
                         "viewer"
                       ]
+                    },
+                    "already_member": {
+                      "default": false,
+                      "type": "boolean"
                     }
                   },
                   "required": [
                     "board_id",
                     "role"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invites/preview": {
+      "post": {
+        "operationId": "invites.preview",
+        "summary": "invites.preview",
+        "description": "A signed-in person (Clerk session cookie). Agent tokens are refused. Body limit: 256 KB.",
+        "tags": [
+          "invites"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "const": "member"
+                        },
+                        "board_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "slug": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "owner",
+                            "editor",
+                            "contributor",
+                            "commenter",
+                            "viewer"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "board_id",
+                        "slug",
+                        "role"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "const": "invite"
+                        },
+                        "board": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "slug": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "travel",
+                                "compliance",
+                                "review",
+                                "launch",
+                                "dossier",
+                                "blank",
+                                "upload"
+                              ]
+                            },
+                            "head_n": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "thumb_url": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "publishes_this_week": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "slug",
+                            "title",
+                            "type",
+                            "head_n",
+                            "updated_at",
+                            "thumb_url",
+                            "publishes_this_week"
+                          ]
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "editor",
+                            "contributor",
+                            "commenter",
+                            "viewer"
+                          ]
+                        },
+                        "upgrade_from": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "owner",
+                                "editor",
+                                "contributor",
+                                "commenter",
+                                "viewer"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "inviter": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "image_url": {
+                                  "default": null,
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "image_url"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "members": {
+                          "type": "object",
+                          "properties": {
+                            "count": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "people": {
+                              "maxItems": 5,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "image_url": {
+                                    "default": null,
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "name",
+                                  "image_url"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "count",
+                            "people"
+                          ]
+                        },
+                        "expires_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "board",
+                        "role",
+                        "upgrade_from",
+                        "inviter",
+                        "members",
+                        "expires_at"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "const": "wrong_account"
+                        },
+                        "masked_email": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "masked_email"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "const": "unusable"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "enum": [
+                            "used",
+                            "expired",
+                            "revoked",
+                            "taken_down"
+                          ]
+                        },
+                        "board_title": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "reason",
+                        "board_title"
+                      ]
+                    }
                   ]
                 }
               }
@@ -6098,6 +6483,230 @@
                               "at",
                               "data"
                             ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "agent.activity"
+                              },
+                              "board_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              },
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "agent": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{12}$"
+                                      },
+                                      "nickname": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 24
+                                      },
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "main",
+                                          "sub"
+                                        ]
+                                      },
+                                      "parent_id": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^[a-f0-9]{12}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "sub_type": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^[A-Za-z0-9 _-]{1,40}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "client": {
+                                        "type": "string",
+                                        "maxLength": 64
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "nickname",
+                                      "kind",
+                                      "parent_id",
+                                      "sub_type",
+                                      "client"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "person": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "pattern": "^user_[A-Za-z0-9]+$"
+                                      }
+                                    },
+                                    "required": [
+                                      "id"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "line": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{12}:[a-z0-9]{1,14}$"
+                                  },
+                                  "action": {
+                                    "type": "string",
+                                    "enum": [
+                                      "joined",
+                                      "pulled",
+                                      "rebasing",
+                                      "reading",
+                                      "read_comments",
+                                      "uploading",
+                                      "publishing",
+                                      "published",
+                                      "needs_rebase",
+                                      "waiting_approval",
+                                      "note",
+                                      "editing",
+                                      "running",
+                                      "browsing",
+                                      "working",
+                                      "spawned",
+                                      "finished",
+                                      "idle",
+                                      "left"
+                                    ]
+                                  },
+                                  "count": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "n": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "publish_id": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "bytes": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "paths": {
+                                    "maxItems": 3,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "maxLength": 512
+                                    }
+                                  },
+                                  "more": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "note": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "maxLength": 80
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "duration_ms": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "agent",
+                                  "person",
+                                  "line",
+                                  "action",
+                                  "count",
+                                  "n",
+                                  "publish_id",
+                                  "bytes",
+                                  "more",
+                                  "note",
+                                  "duration_ms"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "board_id",
+                              "at",
+                              "data"
+                            ]
                           }
                         ]
                       }
@@ -6304,6 +6913,10 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "onboarding_done": {
+                      "default": true,
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -7491,6 +8104,1322 @@
                   "type",
                   "data"
                 ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orgs/{orgId}/invitations": {
+      "get": {
+        "operationId": "orgInvites.list",
+        "summary": "orgInvites.list",
+        "description": "A signed-in person (Clerk session cookie). Agent tokens are refused.",
+        "tags": [
+          "orgs"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^org_[A-Za-z0-9]{10,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invitations": {
+                      "maxItems": 100,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^orginv_[A-Za-z0-9]{10,64}$"
+                          },
+                          "email": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expires_at": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "email",
+                          "role",
+                          "created_at",
+                          "expires_at"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "invitations"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "orgInvites.create",
+        "summary": "orgInvites.create",
+        "description": "A signed-in person (Clerk session cookie). Agent tokens are refused. Body limit: 256 KB.",
+        "tags": [
+          "orgs"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^org_[A-Za-z0-9]{10,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^orginv_[A-Za-z0-9]{10,64}$"
+                    },
+                    "email": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 320
+                    },
+                    "role": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expires_at": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "email",
+                    "role",
+                    "created_at",
+                    "expires_at"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "role": {
+                    "default": "org:member",
+                    "type": "string",
+                    "enum": [
+                      "org:member",
+                      "org:admin"
+                    ]
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orgs/{orgId}/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "orgInvites.revoke",
+        "summary": "orgInvites.revoke",
+        "description": "A signed-in person (Clerk session cookie). Agent tokens are refused.",
+        "tags": [
+          "orgs"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^org_[A-Za-z0-9]{10,64}$"
+            }
+          },
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^orginv_[A-Za-z0-9]{10,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success."
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/agent/activity": {
+      "post": {
+        "operationId": "agent.activity",
+        "summary": "agent.activity",
+        "description": "An agent token (`Authorization: Bearer ifc_…`) or a signed-in person. Body limit: 4 KB.",
+        "tags": [
+          "agent"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "watched": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "required": [
+                    "accepted",
+                    "watched"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "boards": {
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "session": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{8,64}$"
+                  },
+                  "sub": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{1,64}$"
+                      },
+                      "type": {
+                        "type": "string",
+                        "maxLength": 40
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "tool",
+                      "editing",
+                      "running",
+                      "browsing",
+                      "spawned",
+                      "finished",
+                      "idle",
+                      "left"
+                    ]
+                  },
+                  "tool_use_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,64}$"
+                  }
+                },
+                "required": [
+                  "boards",
+                  "session",
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/boards/{id}/versions/{n}/export": {
+      "get": {
+        "operationId": "versions.export",
+        "summary": "versions.export",
+        "description": "An agent token (`Authorization: Bearer ifc_…`) or a signed-in person. Needs the `board.view` permission on the board.",
+        "tags": [
+          "boards"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          {
+            "name": "n",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "board": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "slug": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "slug",
+                        "title",
+                        "url"
+                      ]
+                    },
+                    "version": {
+                      "type": "object",
+                      "properties": {
+                        "n": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "parent_n": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "author": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^user_[A-Za-z0-9]+$"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name"
+                          ]
+                        },
+                        "agent": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        "manifest_sha": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "size_bytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "n",
+                        "parent_n",
+                        "author",
+                        "agent",
+                        "message",
+                        "created_at",
+                        "manifest_sha",
+                        "size_bytes"
+                      ]
+                    },
+                    "manifest": {
+                      "type": "object",
+                      "properties": {
+                        "entry": {
+                          "type": "string",
+                          "pattern": "\\.html?$"
+                        },
+                        "files": {}
+                      },
+                      "required": [
+                        "entry",
+                        "files"
+                      ]
+                    },
+                    "exported_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "pack": {
+                      "type": "object",
+                      "properties": {
+                        "files": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "bytes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "files",
+                        "bytes"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "board",
+                    "version",
+                    "manifest",
+                    "exported_at",
+                    "pack"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/boards/{id}/versions/{n}/blobs": {
+      "get": {
+        "operationId": "versions.blobs",
+        "summary": "versions.blobs",
+        "description": "An agent token (`Authorization: Bearer ifc_…`) or a signed-in person. Needs the `board.view` permission on the board.",
+        "tags": [
+          "boards"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          {
+            "name": "n",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "sha",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 2080
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "description": "raw bytes (application/octet-stream)",
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/me/onboarding": {
+      "get": {
+        "operationId": "me.onboarding.get",
+        "summary": "me.onboarding.get",
+        "description": "A signed-in person (Clerk session cookie). Agent tokens are refused.",
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "engineer",
+                            "product",
+                            "designer",
+                            "founder",
+                            "data",
+                            "other"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "role_other": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "agents": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "claude_code",
+                          "codex",
+                          "copilot",
+                          "cursor",
+                          "claude_ai",
+                          "other",
+                          "none"
+                        ]
+                      }
+                    },
+                    "artifact_freq": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "rarely",
+                            "few_week",
+                            "daily",
+                            "several_day"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "team_mode": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "solo",
+                            "team_2_5",
+                            "team_6_20",
+                            "team_21_plus"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "teammates_agents": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "most",
+                            "some",
+                            "just_me"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "share_methods": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "slack_email",
+                          "notion_docs",
+                          "gist",
+                          "deploy",
+                          "screenshots",
+                          "none"
+                        ]
+                      }
+                    },
+                    "builds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dashboards",
+                          "prototypes",
+                          "reports",
+                          "internal_tools",
+                          "data_viz",
+                          "decks"
+                        ]
+                      }
+                    },
+                    "first_board": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 120
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "skipped": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "role",
+                          "agents",
+                          "artifact_freq",
+                          "team_mode",
+                          "teammates_agents",
+                          "share_methods",
+                          "builds",
+                          "first_board"
+                        ]
+                      }
+                    },
+                    "invited": {
+                      "type": "boolean"
+                    },
+                    "first_board_claimed": {
+                      "type": "boolean"
+                    },
+                    "completed_at": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "updated_at": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "getting_started": {
+                      "type": "object",
+                      "properties": {
+                        "hidden": {
+                          "type": "boolean"
+                        },
+                        "done": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "connect",
+                              "share"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "hidden",
+                        "done"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "role_other",
+                    "agents",
+                    "artifact_freq",
+                    "team_mode",
+                    "teammates_agents",
+                    "share_methods",
+                    "builds",
+                    "first_board",
+                    "skipped",
+                    "invited",
+                    "first_board_claimed",
+                    "completed_at",
+                    "updated_at",
+                    "getting_started"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "me.onboarding.put",
+        "summary": "me.onboarding.put",
+        "description": "A signed-in person (Clerk session cookie). Agent tokens are refused. Body limit: 4 KB.",
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "engineer",
+                            "product",
+                            "designer",
+                            "founder",
+                            "data",
+                            "other"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "role_other": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "agents": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "claude_code",
+                          "codex",
+                          "copilot",
+                          "cursor",
+                          "claude_ai",
+                          "other",
+                          "none"
+                        ]
+                      }
+                    },
+                    "artifact_freq": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "rarely",
+                            "few_week",
+                            "daily",
+                            "several_day"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "team_mode": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "solo",
+                            "team_2_5",
+                            "team_6_20",
+                            "team_21_plus"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "teammates_agents": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "most",
+                            "some",
+                            "just_me"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "share_methods": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "slack_email",
+                          "notion_docs",
+                          "gist",
+                          "deploy",
+                          "screenshots",
+                          "none"
+                        ]
+                      }
+                    },
+                    "builds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dashboards",
+                          "prototypes",
+                          "reports",
+                          "internal_tools",
+                          "data_viz",
+                          "decks"
+                        ]
+                      }
+                    },
+                    "first_board": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 120
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "skipped": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "role",
+                          "agents",
+                          "artifact_freq",
+                          "team_mode",
+                          "teammates_agents",
+                          "share_methods",
+                          "builds",
+                          "first_board"
+                        ]
+                      }
+                    },
+                    "invited": {
+                      "type": "boolean"
+                    },
+                    "first_board_claimed": {
+                      "type": "boolean"
+                    },
+                    "completed_at": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "updated_at": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "getting_started": {
+                      "type": "object",
+                      "properties": {
+                        "hidden": {
+                          "type": "boolean"
+                        },
+                        "done": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "connect",
+                              "share"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "hidden",
+                        "done"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "role_other",
+                    "agents",
+                    "artifact_freq",
+                    "team_mode",
+                    "teammates_agents",
+                    "share_methods",
+                    "builds",
+                    "first_board",
+                    "skipped",
+                    "invited",
+                    "first_board_claimed",
+                    "completed_at",
+                    "updated_at",
+                    "getting_started"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "engineer",
+                          "product",
+                          "designer",
+                          "founder",
+                          "data",
+                          "other"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "role_other": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "agents": {
+                    "maxItems": 7,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "claude_code",
+                        "codex",
+                        "copilot",
+                        "cursor",
+                        "claude_ai",
+                        "other",
+                        "none"
+                      ]
+                    }
+                  },
+                  "artifact_freq": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "rarely",
+                          "few_week",
+                          "daily",
+                          "several_day"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "team_mode": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "solo",
+                          "team_2_5",
+                          "team_6_20",
+                          "team_21_plus"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "teammates_agents": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "most",
+                          "some",
+                          "just_me"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "share_methods": {
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "slack_email",
+                        "notion_docs",
+                        "gist",
+                        "deploy",
+                        "screenshots",
+                        "none"
+                      ]
+                    }
+                  },
+                  "builds": {
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "dashboards",
+                        "prototypes",
+                        "reports",
+                        "internal_tools",
+                        "data_viz",
+                        "decks"
+                      ]
+                    }
+                  },
+                  "first_board": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "skip": {
+                    "type": "string",
+                    "enum": [
+                      "role",
+                      "agents",
+                      "artifact_freq",
+                      "team_mode",
+                      "teammates_agents",
+                      "share_methods",
+                      "builds",
+                      "first_board"
+                    ]
+                  },
+                  "step_ms": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3600000
+                  },
+                  "invited": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "complete": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "claim_first_board": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "getting_started": {
+                    "type": "object",
+                    "properties": {
+                      "hidden": {
+                        "type": "boolean"
+                      },
+                      "done": {
+                        "maxItems": 2,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "connect",
+                            "share"
+                          ]
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
               }
             }
           }

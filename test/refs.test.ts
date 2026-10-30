@@ -17,11 +17,11 @@ describe('CLI reference', () => {
 });
 
 describe('MCP reference', () => {
-  it('groups all 14 tools into Read, Write, Assets and Comments', () => {
+  it('groups all 16 tools into Read, Write, Assets and Comments', () => {
     const groups = mcpGroups();
     expect(groups.map(([g]) => g)).toEqual(['Read', 'Write', 'Assets', 'Comments']);
     expect(groups.flatMap(([, t]) => t).length).toBe(MCP_TOOLS.length);
-    expect(MCP_TOOLS.length).toBe(14);
+    expect(MCP_TOOLS.length).toBe(16);
   });
   it('puts a tool the map does not know under Other', () => {
     const extra = { name: 'new_tool', description: 'New.', inputSchema: {}, annotations: {} };

@@ -174,6 +174,52 @@
       "subcommands": []
     },
     {
+      "name": "export",
+      "description": "Download a board version as a zip that opens offline (or one HTML file)",
+      "args": [
+        {
+          "name": "json",
+          "type": "boolean",
+          "description": "Print one machine-readable JSON document on stdout"
+        },
+        {
+          "name": "api",
+          "type": "string",
+          "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+        },
+        {
+          "name": "board",
+          "type": "positional",
+          "description": "Board URL (https://app.intraface.cc/b/<slug>) or slug",
+          "required": true
+        },
+        {
+          "name": "at",
+          "type": "string",
+          "description": "Version number (default: the latest)"
+        },
+        {
+          "name": "out",
+          "type": "string",
+          "description": "Folder to save in, or a file path (default: this folder)",
+          "alias": [
+            "o"
+          ]
+        },
+        {
+          "name": "html",
+          "type": "boolean",
+          "description": "One HTML file with its assets inside (one-page versions up to 5 MB)"
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Overwrite a file that’s already there"
+        }
+      ],
+      "subcommands": []
+    },
+    {
       "name": "publish",
       "description": "Publish this folder’s changes to the board as a new version",
       "args": [
@@ -485,6 +531,33 @@
               "name": "print",
               "type": "boolean",
               "description": "Only print what to run; change nothing"
+            },
+            {
+              "name": "live",
+              "type": "boolean",
+              "description": "Also add the intraface-live hook plugin: subagents and coarse steps in the watch tray"
+            }
+          ],
+          "subcommands": []
+        },
+        {
+          "name": "event",
+          "description": "Tell Intraface what a Claude Code agent is doing (run by the intraface-live plugin’s hooks)",
+          "args": [
+            {
+              "name": "json",
+              "type": "boolean",
+              "description": "Print one machine-readable JSON document on stdout"
+            },
+            {
+              "name": "api",
+              "type": "string",
+              "description": "Intraface address (default: INTRAFACE_API, else https://app.intraface.cc)"
+            },
+            {
+              "name": "hook",
+              "type": "boolean",
+              "description": "Read one Claude Code hook event (JSON) from stdin"
             }
           ],
           "subcommands": []
